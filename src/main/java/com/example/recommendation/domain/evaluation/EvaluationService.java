@@ -22,7 +22,11 @@ import com.example.recommendation.external.naver.Product;
  * - 점수 계산
  * - 정렬
  * - 상위 N개 선별
- * - 집합 특성 계산 (keyword / brand 매칭 여부)
+ * - 집합 특성 계산 (hasBrandMatch / hasKeywordMatch)
+ *
+ * [현재 MVP 제약]
+ * - CriteriaService가 optionKeywords / preferredBrand 문자열을 만들지 않으므로
+ *   optionKeyword 매칭 기반 신호는 만들 수 없다.
  */
 @Service
 public class EvaluationService {
@@ -55,20 +59,22 @@ public class EvaluationService {
                         .toList();
 
         // 2️⃣ 집합 특성 계산 (사실 데이터)
+
+        // hasBrandMatch:
+        // - Criteria에서 brandPreferred가 true이고
+        // - Product가 브랜드 정보를 가지고 있으면 (hasBrand)
+        // - 후보 중 하나라도 해당되면 true
         boolean hasBrandMatch =
                 evaluatedProducts.stream()
                         .anyMatch(ep ->
                                 criteria.isBrandPreferred()
-                                && ep.getProduct().hasBrand()
+                                        && ep.getProduct().hasBrand()
                         );
 
-        // hasKeywordMatch는 현재 점수 기반 임시 판단
-        // 추후 optionKeyword 점수 도입 시 대체 예정
-        boolean hasKeywordMatch =
-                evaluatedProducts.stream()
-                        .anyMatch(ep ->
-                                ep.getScore() >= 2
-                        );
+        // hasKeywordMatch:
+        // - 현재 CriteriaService는 optionKeywords를 생성하지 않는다.
+        // - 따라서 "optionKeyword 매칭"이라는 사실 데이터 자체가 존재할 수 없으므로 항상 false.
+        boolean hasKeywordMatch = false;
 
         // 3️⃣ EvaluationResult 생성
         return EvaluationResult.of(
@@ -78,16 +84,24 @@ public class EvaluationService {
         );
     }
 
+    /**
+     * 점수 계산 (현재 MVP: CriteriaService가 제공하는 사실 데이터만 사용)
+     *
+     * - priceRange / priceMax가 존재하면 +1
+     * - brandPreferred가 true이고 product.hasBrand()면 +1
+     */
     private int score(
             Product product,
             RecommendationCriteria criteria
     ) {
         int score = 0;
 
+        // 가격 관련 신호 (CriteriaService가 setPriceRange/setPriceMax로 채움)
         if (criteria.getPriceRange() != null) {
             score += 1;
         }
 
+        // 브랜드 선호 신호 (CriteriaService가 "브랜드" 포함 시 brandPreferred=true)
         if (criteria.isBrandPreferred() && product.hasBrand()) {
             score += 1;
         }

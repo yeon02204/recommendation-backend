@@ -4,6 +4,8 @@ import com.example.recommendation.domain.criteria.RecommendationCriteria;
 import com.example.recommendation.domain.evaluation.EvaluationResult;
 import org.springframework.stereotype.Component;
 
+import static com.example.recommendation.domain.decision.Decision.REQUERY_NEED_MORE_CONDITION;
+
 /**
  * [역할]
  * - EvaluationResult라는 "사실 데이터"를 해석하여
@@ -46,7 +48,7 @@ public class DecisionMaker {
         if (hasNoSignal) {
             return Decision.requery(
                     "추천 근거가 부족합니다.",
-                    "조금 더 구체적인 조건을 알려주실 수 있을까요?"
+                    REQUERY_NEED_MORE_CONDITION   // ⭐ 변경: 고정 템플릿 사용
             );
         }
 
@@ -57,7 +59,7 @@ public class DecisionMaker {
         if (ambiguousTop) {
             return Decision.requery(
                     "후보 상품 간 차이가 명확하지 않습니다.",
-                    "조금 더 구체적인 조건을 알려주실 수 있을까요?"
+                    REQUERY_NEED_MORE_CONDITION   // ⭐ 변경: 고정 템플릿 사용
             );
         }
 
