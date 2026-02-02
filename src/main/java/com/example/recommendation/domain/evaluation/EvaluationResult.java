@@ -62,6 +62,23 @@ public class EvaluationResult {
                 hasBrandMatch
         );
     }
+ // ✅ 테스트 전용: Decision 검증용 사실 데이터 직접 주입
+    public static EvaluationResult testOf(
+            int candidateCount,
+            int topScore,
+            int secondScore,
+            boolean hasKeywordMatch,
+            boolean hasBrandMatch
+    ) {
+        return new EvaluationResult(
+                List.of(),          // products는 Decision 테스트에 필요 없음
+                candidateCount,
+                topScore,
+                secondScore,
+                hasKeywordMatch,
+                hasBrandMatch
+        );
+    }
 
     /* ========= getters ========= */
 
