@@ -16,7 +16,13 @@ public class EvaluationDecisionIntegrationTest {
     void empty_products_flow_evaluation_to_decision() {
         // given: 검색 결과 0개(=상품 없음) + 빈 criteria
         List<Product> products = List.of();
-        RecommendationCriteria criteria = new RecommendationCriteria();
+        RecommendationCriteria criteria = new RecommendationCriteria(
+        null,        // searchKeyword
+        List.of(),   // optionKeywords
+        null,        // priceMax
+        null         // preferredBrand
+);
+
 
         EvaluationService evaluationService = new EvaluationService();
         DecisionMaker decisionMaker = new DecisionMaker();
