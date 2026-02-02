@@ -15,27 +15,36 @@ import org.springframework.stereotype.Component;
 @Component
 public class NaverClient {
 
-    public List<Product> search(String keyword, Integer maxPrice) {
-
+//    public List<Product> search(String keyword, Integer maxPrice) {
+//
+//        return List.of(
+//                new Product(
+//                        1L,
+//                        "무선 블루투스 헤드셋",
+//                        89000,
+//                        true
+//                ),
+//                new Product(
+//                        2L,
+//                        "가성비 유선 헤드셋",
+//                        39000,
+//                        false
+//                ),
+//                new Product(
+//                        3L,
+//                        "프리미엄 게이밍 헤드셋",
+//                        159000,
+//                        true
+//                )
+//        );
+//    }
+    
+    
+    public List<Product> searchDummy() {
         return List.of(
-                new Product(
-                        1L,
-                        "무선 블루투스 헤드셋",
-                        89000,
-                        true
-                ),
-                new Product(
-                        2L,
-                        "가성비 유선 헤드셋",
-                        39000,
-                        false
-                ),
-                new Product(
-                        3L,
-                        "프리미엄 게이밍 헤드셋",
-                        159000,
-                        true
-                )
+            new Product(1L, "무선 헤드셋", 89000, true),
+            new Product(2L, "게이밍 헤드셋", 129000, false),
+            new Product(3L, "블루투스 이어폰", 99000, true)
         );
     }
 }

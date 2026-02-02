@@ -32,13 +32,33 @@ public class SearchService {
     /**
      * 추천 기준을 기반으로 네이버 쇼핑 검색 수행
      */
+//    public List<Product> search(RecommendationCriteria criteria) {
+//
+//        // 1️⃣ Criteria에서 그대로 꺼낸다 (가공 ❌)
+//        String keyword = criteria.getSearchKeyword();
+//        Integer maxPrice = criteria.getPriceMax();
+//
+//        // 2️⃣ 네이버 검색 호출
+//        return naverClient.search(keyword, maxPrice);
+//    }
+    
+
+/**
+ * [역할]
+ * - 네이버 쇼핑 API 호출 전용 클래스
+ *
+ * 현재 단계:
+ * - 실제 API ❌
+ * - 더미 상품 반환만 수행
+ */
+    
+    
+    
+    
     public List<Product> search(RecommendationCriteria criteria) {
-
-        // 1️⃣ Criteria에서 그대로 꺼낸다 (가공 ❌)
-        String keyword = criteria.getSearchKeyword();
-        Integer maxPrice = criteria.getPriceMax();
-
-        // 2️⃣ 네이버 검색 호출
-        return naverClient.search(keyword, maxPrice);
+        return naverClient.searchDummy();
     }
+
+
+    
 }

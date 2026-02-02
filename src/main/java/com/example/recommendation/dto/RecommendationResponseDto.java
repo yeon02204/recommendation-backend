@@ -66,7 +66,7 @@ public class RecommendationResponseDto {
         return new RecommendationResponseDto(
                 ResponseType.REQUERY,
                 question,
-                null
+                List.of()
         );
     }
 
@@ -77,7 +77,7 @@ public class RecommendationResponseDto {
         return new RecommendationResponseDto(
                 ResponseType.INVALID,
                 reason,
-                null
+                List.of()
         );
     }
 
