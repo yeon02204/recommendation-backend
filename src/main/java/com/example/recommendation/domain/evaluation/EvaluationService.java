@@ -29,6 +29,28 @@ import com.example.recommendation.external.naver.Product;
  * - 키워드 1개라도 매칭되면 +1점 (중복 매칭 금지)
  * - 브랜드 선호가 있고, 상품에 브랜드가 있으면 +1점
  */
+
+/**
+ * ⚠️ POLICY LOCK (MVP)
+ *
+ * 이 클래스의 점수 정책(+1 / +1)은 MVP 기준으로 "고정"되어 있다.
+ *
+ * - 점수 가중치 변경
+ * - 조건 추가 (price, brand 동일성 등)
+ * - 점수 해상도 확장
+ *
+ * ❌ 금지 (고도화 단계 전까지)
+ *
+ * 이 클래스는 "추천 품질"이 아니라
+ * "Decision 흐름 안정성"을 검증하기 위한 최소 정책 구현체다.
+ *
+ * 정책 변경은 반드시:
+ * 1) 정책 문서 수정
+ * 2) 정책 테스트 수정
+ * 3) 팀장 승인
+ * 이후에만 가능하다.
+ */
+
 @Service
 public class EvaluationService {
 

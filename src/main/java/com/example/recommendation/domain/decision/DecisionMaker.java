@@ -17,6 +17,23 @@ import org.springframework.stereotype.Component;
  * - 문자열 선택 ❌
  * - 오직 상태 판단 + 정책 선택만 수행
  */
+
+/**
+ * ⚠️ REQUERY 다발에 대한 책임 선언
+ *
+ * REQUERY가 많이 발생하는 것은
+ * "버그"가 아니라 MVP 정책의 의도된 결과다.
+ *
+ * - 점수 해상도가 낮기 때문
+ * - 보수적인 판단 기준을 사용하기 때문
+ *
+ * 실제 데이터 연결 후에도
+ * REQUERY가 많다고 해서
+ * 이 클래스의 로직을 임의로 수정해서는 안 된다.
+ *
+ * 개선은 "고도화 단계"에서만 수행한다.
+ */
+
 @Component
 public class DecisionMaker {
 
