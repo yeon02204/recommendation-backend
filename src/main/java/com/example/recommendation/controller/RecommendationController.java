@@ -34,13 +34,18 @@ public class RecommendationController {
     public RecommendationController(HomeRecommendationOrchestrator homeOrchestrator) {
         this.homeOrchestrator = homeOrchestrator;
     }
-
+    
+    
     @PostMapping("/home")
     public RecommendationResponseDto recommendHome(
             @RequestBody RecommendationRequestDto request
     ) {
+        if (request == null || request.getUserInput() == null || request.getUserInput().isBlank()) {
+            return RecommendationResponseDto.invalid("입력이 비어 있습니다.");
+        }
         return homeOrchestrator.handle(request);
     }
+
 }
 
 

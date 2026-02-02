@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
  * - 추천 가능 / 불가능 판단 ❌
  * - REQUERY / INVALID 결정 ❌
  * - Decision 로직 ❌
+ * - ai가 뽑아낸 키워드를 정리하는곳
  *
  * [허용]
  * - 문자열 패턴 기반 규칙

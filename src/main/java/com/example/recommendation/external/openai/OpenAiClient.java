@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import com.example.recommendation.domain.criteria.RecommendationCriteria;
 import com.example.recommendation.domain.evaluation.EvaluatedProduct;
 
-
+// open Ai가 자연어에서 키워드 옵션 등등을 뽑아내도록 프롬프트를 작성하는곳
 @Component
 public class OpenAiClient {
 
