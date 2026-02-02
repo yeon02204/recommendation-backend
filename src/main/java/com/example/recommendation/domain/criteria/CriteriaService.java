@@ -1,6 +1,8 @@
-package com.example.recommendation.domain.criteria;
-
-import org.springframework.stereotype.Service;
+//package com.example.recommendation.domain.criteria;
+//
+//import com.example.recommendation.dto.AiCriteriaResultDto;
+//import com.example.recommendation.external.openai.OpenAIClient;
+//import org.springframework.stereotype.Service;
 
 /**
  * [역할]
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
  * - 추천 가능 / 불가능 판단 ❌
  * - REQUERY / INVALID 결정 ❌
  * - Decision 로직 ❌
+ * - AI가 뽑아낸 키워드를 정리하는 곳
  *
  * [허용]
  * - 문자열 패턴 기반 규칙
@@ -22,61 +25,45 @@ import org.springframework.stereotype.Service;
  * - 점수 계산 ❌
  * - confidence / followUpQuestion 설정 ❌
  */
+
+
+package com.example.recommendation.domain.criteria;
+
+import com.example.recommendation.dto.AiCriteriaResultDto;
+import com.example.recommendation.external.openai.OpenAiCriteriaClient;
+import org.springframework.stereotype.Service;
+
+/**
+ * [역할]
+ * - 사용자 자연어 입력을 OpenAI에 전달
+ * - 구조화된 조건을 RecommendationCriteria로 변환
+ *
+ * [절대 하지 않는 것]
+ * - 문자열 contains 판단 ❌
+ * - 가격/브랜드 해석 ❌
+ * - 추천 가능성 판단 ❌
+ */
 @Service
 public class CriteriaService {
 
-    /**
-     * 사용자 입력을 기반으로 추천 기준을 생성한다.
-     *
-     * @param userInput 사용자 자연어 입력
-     * @return RecommendationCriteria (상태만 포함)
-     */
+    private final OpenAiCriteriaClient openAiClient;
+
+    public CriteriaService(OpenAiCriteriaClient openAiClient) {
+        this.openAiClient = openAiClient;
+    }
+
     public RecommendationCriteria createCriteria(String userInput) {
 
-        RecommendationCriteria criteria = new RecommendationCriteria();
+        // 1️⃣ 사용자 입력을 그대로 OpenAI에 전달
+        AiCriteriaResultDto aiResult =
+                openAiClient.extractCriteria(userInput);
 
-        // 입력 방어 (판단 아님, 안전 처리)
-        if (userInput == null || userInput.isBlank()) {
-            return criteria;
-        }
-
-        // =========================
-        // 1️⃣ 검색 키워드 생성 (필수)
-        // =========================
-        // MVP 기준: 원문을 그대로 대표 키워드로 사용
-        // (추후 mainKeyword 추출 로직으로 교체 가능)
-        criteria.setSearchKeyword(userInput.trim());
-
-        // =========================
-        // 2️⃣ 가격 관련 키워드 (의도 표현)
-        // =========================
-        // 더 구체적인 표현이 우선되며, 나중 매칭이 덮어씀
-
-        if (userInput.contains("저렴")) {
-            criteria.setPriceRange("UNDER_50K");
-            criteria.setPriceMax(50_000);
-        }
-
-        if (userInput.contains("가성비")) {
-            criteria.setPriceRange("UNDER_100K");
-            criteria.setPriceMax(100_000);
-        }
-
-        // =========================
-        // 3️⃣ 브랜드 선호 여부
-        // =========================
-        if (userInput.contains("브랜드")) {
-            criteria.setBrandPreferred(true);
-        }
-
-        // ⚠️ 중요
-        // 여기서는:
-        // - 추천 가능 여부 판단 ❌
-        // - confidence 설정 ❌
-        // - followUpQuestion 설정 ❌
-        //
-        // 이 객체는 "사실 데이터"만 담는다.
-
-        return criteria;
+        // 2️⃣ AI 응답을 도메인 객체로 "그대로" 변환
+        return new RecommendationCriteria(
+                aiResult.getSearchKeyword(),
+                aiResult.getOptionKeywords(),
+                aiResult.getPriceMax(),
+                aiResult.getPreferredBrand()
+        );
     }
 }

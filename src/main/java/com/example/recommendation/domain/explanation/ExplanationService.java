@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.recommendation.domain.criteria.RecommendationCriteria;
 import com.example.recommendation.domain.evaluation.EvaluatedProduct;
-import com.example.recommendation.external.openai.OpenAiClient;
+import com.example.recommendation.external.openai.OpenAiExplanationClient;
 
 /**
  * [역할]
@@ -21,9 +21,9 @@ import com.example.recommendation.external.openai.OpenAiClient;
 @Service
 public class ExplanationService {
 
-    private final OpenAiClient openAiClient;
+    private final OpenAiExplanationClient openAiClient;
 
-    public ExplanationService(OpenAiClient openAiClient) {
+    public ExplanationService(OpenAiExplanationClient openAiClient) {
         this.openAiClient = openAiClient;
     }
 

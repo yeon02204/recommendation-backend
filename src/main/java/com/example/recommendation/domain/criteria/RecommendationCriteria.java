@@ -20,71 +20,70 @@ package com.example.recommendation.domain.criteria;
  * - 이 객체는 절대 "추천 가능/불가능"을 말하지 않는다
  * - 모든 판단은 DecisionMaker의 책임이다
  */
+
+
+import java.util.List;
+
+/**
+ * 추천 판단 이전 단계의 "조건 데이터"를 담는 순수 도메인 객체
+ *
+ * - 판단 로직 없음
+ * - 상태 플래그 없음
+ * - setter 없음
+ * - null / 빈 값 허용
+ */
 public class RecommendationCriteria {
 
-    /**
-     * 검색에 사용할 대표 키워드 (필수)
-     * 예: "헤드셋", "무선 이어폰"
-     */
-    private String searchKeyword;
+    private final String searchKeyword;
+    private final List<String> optionKeywords;
+    private final Integer priceMax;
+    private final String preferredBrand;
 
-    /**
-     * 가격 상한 (실제 검색/필터링용)
-     * 예: 100000
-     * 없으면 null
-     */
-    private Integer priceMax;
-
-    /**
-     * 가격 범위 (의도 표현용)
-     * 실제 가격 판단은 Evaluation 단계에서 수행
-     *
-     * 예:
-     * - UNDER_50K
-     * - UNDER_100K
-     * - UNDER_200K
-     * - NO_LIMIT
-     */
-    private String priceRange;
-
-    /**
-     * 브랜드 선호 여부
-     */
-    private boolean brandPreferred;
-
-    /* =====================
-       Getter / Setter
-       ===================== */
+    public RecommendationCriteria(
+            String searchKeyword,
+            List<String> optionKeywords,
+            Integer priceMax,
+            String preferredBrand
+    ) {
+        this.searchKeyword = searchKeyword;
+        this.optionKeywords = optionKeywords;
+        this.priceMax = priceMax;
+        this.preferredBrand = preferredBrand;
+    }
 
     public String getSearchKeyword() {
         return searchKeyword;
     }
 
-    public void setSearchKeyword(String searchKeyword) {
-        this.searchKeyword = searchKeyword;
+    public List<String> getOptionKeywords() {
+        return optionKeywords;
     }
 
     public Integer getPriceMax() {
         return priceMax;
     }
 
-    public void setPriceMax(Integer priceMax) {
-        this.priceMax = priceMax;
+    public String getPreferredBrand() {
+        return preferredBrand;
     }
+    
+    // ===== 🔽 EvaluationService 호환용 파생 메서드 (핵심) =====
 
-    public String getPriceRange() {
-        return priceRange;
-    }
-
-    public void setPriceRange(String priceRange) {
-        this.priceRange = priceRange;
-    }
+    /**
+     * 브랜드 선호 여부
+     * - 판단 아님
+     * - preferredBrand 값 존재 여부만 노출
+     */
 
     public boolean isBrandPreferred() {
-        return brandPreferred;
+        return preferredBrand != null && !preferredBrand.isBlank();
     }
 
-    public void setBrandPreferred(boolean brandPreferred) {
-        this.brandPreferred = brandPreferred;
+    /**
+     * 가격 조건 존재 여부
+     * - EvaluationService의 기존 로직 호환용
+     */
+    public String getPriceRange() {
+        return priceMax != null ? "HAS_LIMIT" : null;
     }
 }
