@@ -11,10 +11,10 @@ import com.example.recommendation.domain.decision.DecisionMaker;
 import com.example.recommendation.domain.evaluation.EvaluationResult;
 import com.example.recommendation.domain.evaluation.EvaluationService;
 import com.example.recommendation.domain.explanation.ExplanationService;
-import com.example.recommendation.domain.search.SearchService;
 import com.example.recommendation.dto.RecommendationResponseDto;
 import com.example.recommendation.dto.RecommendationResponseDto.Item;
 import com.example.recommendation.external.naver.Product;
+import com.example.recommendation.domain.search.SearchService;
 
 @Service
 public class RecommendationService {
@@ -61,8 +61,12 @@ public class RecommendationService {
                 );
 
             case REQUERY:
+                // ⚠️ Decision은 문자열을 가지지 않는다
+                // 설명 문구는 ExplanationPolicy 기준으로 생성
                 return RecommendationResponseDto.requery(
-                        decision.getFollowUpQuestion()
+                        explanationService.generateByPolicy(
+                                decision.getExplanationPolicy()
+                        )
                 );
 
             case RECOMMEND:
@@ -79,7 +83,7 @@ public class RecommendationService {
                         result.getProducts().stream()
                                 .map(p ->
                                         new Item(
-                                                null, // productId는 외부 계약 확정 후 채움
+                                                null,
                                                 explanation
                                         )
                                 )

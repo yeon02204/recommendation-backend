@@ -24,9 +24,10 @@ import com.example.recommendation.external.naver.Product;
  * - 상위 N개 선별
  * - 집합 특성 계산 (hasBrandMatch / hasKeywordMatch)
  *
- * [현재 MVP 제약]
- * - CriteriaService가 optionKeywords / preferredBrand 문자열을 만들지 않으므로
- *   optionKeyword 매칭 기반 신호는 만들 수 없다.
+ * [MVP 기준]
+ * - optionKeywords는 MVP 필수 신호
+ * - 키워드 1개라도 매칭되면 +1점 (중복 매칭 금지)
+ * - 브랜드 선호가 있고, 상품에 브랜드가 있으면 +1점
  */
 @Service
 public class EvaluationService {
@@ -41,15 +42,55 @@ public class EvaluationService {
             return EvaluationResult.empty();
         }
 
-        // 1️⃣ 점수 계산 + 정렬 + 상위 5개
+        // 1️⃣ 상품별 사실 생성 + 점수 계산 + 정렬 + 상위 5개
         List<EvaluatedProduct> evaluatedProducts =
                 products.stream()
-                        .map(product ->
-                                new EvaluatedProduct(
-                                        product,
-                                        score(product, criteria)
-                                )
-                        )
+                        .map(product -> {
+
+                            /* =========================
+                             * 1. brandMatch (사실)
+                             * =========================
+                             * - 브랜드 선호가 있고
+                             * - 상품에 브랜드 정보가 존재하는 경우만 true
+                             * - (기존 테스트 계약 유지)
+                             */
+                            boolean brandMatched =
+                                    criteria.isBrandPreferred()
+                                    && product.hasBrand();
+
+                            /* =========================
+                             * 2. optionKeywordMatch (사실)
+                             * =========================
+                             * - 키워드 1개라도 매칭되면 true
+                             * - 중복 매칭 절대 금지
+                             */
+                            boolean optionKeywordMatched = false;
+                            if (criteria.getOptionKeywords() != null) {
+                                for (String kw : criteria.getOptionKeywords()) {
+                                    if (product.getTitle().contains(kw)) {
+                                        optionKeywordMatched = true;
+                                        break; // ⭐ 중복 매칭 방지
+                                    }
+                                }
+                            }
+
+                            /* =========================
+                             * 3. 점수 계산 (MVP 정책)
+                             * =========================
+                             * - optionKeywordMatch: +1
+                             * - brandMatch: +1
+                             */
+                            int score = 0;
+                            if (optionKeywordMatched) score += 1;
+                            if (brandMatched) score += 1;
+
+                            return new EvaluatedProduct(
+                                    product,
+                                    score,
+                                    brandMatched,
+                                    optionKeywordMatched
+                            );
+                        })
                         .sorted(
                                 Comparator.comparingInt(
                                         EvaluatedProduct::getScore
@@ -58,54 +99,23 @@ public class EvaluationService {
                         .limit(5)
                         .toList();
 
-        // 2️⃣ 집합 특성 계산 (사실 데이터)
+        /* =========================
+         * 4. 집합 특성 계산 (사실)
+         * ========================= */
 
-        // hasBrandMatch:
-        // - Criteria에서 brandPreferred가 true이고
-        // - Product가 브랜드 정보를 가지고 있으면 (hasBrand)
-        // - 후보 중 하나라도 해당되면 true
         boolean hasBrandMatch =
                 evaluatedProducts.stream()
-                        .anyMatch(ep ->
-                                criteria.isBrandPreferred()
-                                        && ep.getProduct().hasBrand()
-                        );
+                        .anyMatch(EvaluatedProduct::hasBrandMatch);
 
-        // hasKeywordMatch:
-        // - 현재 CriteriaService는 optionKeywords를 생성하지 않는다.
-        // - 따라서 "optionKeyword 매칭"이라는 사실 데이터 자체가 존재할 수 없으므로 항상 false.
-        boolean hasKeywordMatch = false;
+        boolean hasKeywordMatch =
+                evaluatedProducts.stream()
+                        .anyMatch(EvaluatedProduct::hasKeywordMatch);
 
-        // 3️⃣ EvaluationResult 생성
+        // 5️⃣ EvaluationResult 생성
         return EvaluationResult.of(
                 evaluatedProducts,
                 hasKeywordMatch,
                 hasBrandMatch
         );
-    }
-
-    /**
-     * 점수 계산 (현재 MVP: CriteriaService가 제공하는 사실 데이터만 사용)
-     *
-     * - priceRange / priceMax가 존재하면 +1
-     * - brandPreferred가 true이고 product.hasBrand()면 +1
-     */
-    private int score(
-            Product product,
-            RecommendationCriteria criteria
-    ) {
-        int score = 0;
-
-        // 가격 관련 신호 (CriteriaService가 setPriceRange/setPriceMax로 채움)
-        if (criteria.getPriceRange() != null) {
-            score += 1;
-        }
-
-        // 브랜드 선호 신호 (CriteriaService가 "브랜드" 포함 시 brandPreferred=true)
-        if (criteria.isBrandPreferred() && product.hasBrand()) {
-            score += 1;
-        }
-
-        return score;
     }
 }

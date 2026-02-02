@@ -1,5 +1,7 @@
 package com.example.recommendation.domain.criteria;
 
+import java.util.List;
+
 /**
  * [역할]
  * - 추천 판단에 필요한 조건을 담는 순수 도메인 객체
@@ -20,9 +22,6 @@ package com.example.recommendation.domain.criteria;
  * - 이 객체는 절대 "추천 가능/불가능"을 말하지 않는다
  * - 모든 판단은 DecisionMaker의 책임이다
  */
-
-
-import java.util.List;
 
 /**
  * 추천 판단 이전 단계의 "조건 데이터"를 담는 순수 도메인 객체
@@ -46,7 +45,13 @@ public class RecommendationCriteria {
             String preferredBrand
     ) {
         this.searchKeyword = searchKeyword;
-        this.optionKeywords = optionKeywords;
+
+        // 🔑 핵심 수정:
+        // optionKeywords는 null이 아닌 "빈 리스트"로 보존한다
+        // EvaluationService는 이 값을 그대로 신뢰한다
+        this.optionKeywords =
+                optionKeywords == null ? List.of() : List.copyOf(optionKeywords);
+
         this.priceMax = priceMax;
         this.preferredBrand = preferredBrand;
     }
@@ -66,7 +71,7 @@ public class RecommendationCriteria {
     public String getPreferredBrand() {
         return preferredBrand;
     }
-    
+
     // ===== 🔽 EvaluationService 호환용 파생 메서드 (핵심) =====
 
     /**
@@ -74,7 +79,6 @@ public class RecommendationCriteria {
      * - 판단 아님
      * - preferredBrand 값 존재 여부만 노출
      */
-
     public boolean isBrandPreferred() {
         return preferredBrand != null && !preferredBrand.isBlank();
     }

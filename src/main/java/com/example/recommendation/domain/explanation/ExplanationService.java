@@ -28,12 +28,22 @@ public class ExplanationService {
     }
 
     /**
-     * 추천 결과 설명 문장 생성
+     * 추천 결과 설명 문장 생성 (RECOMMEND 전용)
+     * - AI 호출은 여기서만 수행
      */
     public String generateExplanation(
             List<EvaluatedProduct> products,
             RecommendationCriteria criteria
     ) {
         return openAiClient.generateExplanation(products, criteria);
+    }
+
+    /**
+     * 정책 기반 고정 설명 문장 반환 (REQUERY / INVALID 전용)
+     * - AI 호출 ❌
+     * - ExplanationPolicy에 정의된 문장만 반환
+     */
+    public String generateByPolicy(ExplanationPolicy policy) {
+        return policy.getMessage();
     }
 }

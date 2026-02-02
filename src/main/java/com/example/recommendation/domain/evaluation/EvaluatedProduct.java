@@ -7,9 +7,24 @@ public class EvaluatedProduct {
     private final Product product;
     private final int score;
 
-    public EvaluatedProduct(Product product, int score) {
+    // ⭐ 사실 데이터
+    private final boolean hasBrandMatch;
+    private final boolean hasKeywordMatch;
+
+    public EvaluatedProduct(
+            Product product,
+            int score,
+            boolean hasBrandMatch,
+            boolean hasKeywordMatch
+            
+            
+    ) {
         this.product = product;
         this.score = score;
+        this.hasBrandMatch = hasBrandMatch;
+        this.hasKeywordMatch = hasKeywordMatch;
+        
+        
     }
 
     public int getScore() {
@@ -19,4 +34,14 @@ public class EvaluatedProduct {
     public Product getProduct() {
         return product;
     }
+
+    public boolean hasKeywordMatch() {
+        return hasKeywordMatch;
+    }
+    
+    public boolean hasBrandMatch() {
+        return hasBrandMatch;
+    }
+
+    
 }

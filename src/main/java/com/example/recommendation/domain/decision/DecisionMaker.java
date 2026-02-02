@@ -2,9 +2,8 @@ package com.example.recommendation.domain.decision;
 
 import com.example.recommendation.domain.criteria.RecommendationCriteria;
 import com.example.recommendation.domain.evaluation.EvaluationResult;
+import com.example.recommendation.domain.explanation.ExplanationPolicy;
 import org.springframework.stereotype.Component;
-
-import static com.example.recommendation.domain.decision.Decision.REQUERY_NEED_MORE_CONDITION;
 
 /**
  * [역할]
@@ -15,7 +14,8 @@ import static com.example.recommendation.domain.decision.Decision.REQUERY_NEED_M
  * - 상품 선택 ❌
  * - 점수 계산 ❌
  * - AI 호출 ❌
- * - 오직 상태 판단만 수행
+ * - 문자열 선택 ❌
+ * - 오직 상태 판단 + 정책 선택만 수행
  */
 @Component
 public class DecisionMaker {
@@ -48,7 +48,7 @@ public class DecisionMaker {
         if (hasNoSignal) {
             return Decision.requery(
                     "추천 근거가 부족합니다.",
-                    REQUERY_NEED_MORE_CONDITION   // ⭐ 변경: 고정 템플릿 사용
+                    ExplanationPolicy.REQUERY_NEED_MORE_CONDITION
             );
         }
 
@@ -59,7 +59,7 @@ public class DecisionMaker {
         if (ambiguousTop) {
             return Decision.requery(
                     "후보 상품 간 차이가 명확하지 않습니다.",
-                    REQUERY_NEED_MORE_CONDITION   // ⭐ 변경: 고정 템플릿 사용
+                    ExplanationPolicy.REQUERY_NEED_MORE_CONDITION
             );
         }
 
