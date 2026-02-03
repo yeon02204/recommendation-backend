@@ -56,8 +56,10 @@ public class SearchService {
     
     
     public List<Product> search(RecommendationCriteria criteria) {
-        return naverClient.searchDummy();
+        String keyword = criteria.getSearchKeyword();
+        return naverClient.search(keyword);
     }
+
 
 
     
