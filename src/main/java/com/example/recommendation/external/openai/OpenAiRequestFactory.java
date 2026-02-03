@@ -23,4 +23,19 @@ public class OpenAiRequestFactory {
                 "temperature", 0
         );
     }
+    
+    public static Object explanationRequest(String prompt, String apiKey) {
+        return Map.of(
+            "model", "gpt-4o-mini",
+            "messages", List.of(
+                Map.of(
+                    "role", "user",
+                    "content", prompt
+                )
+            ),
+            "temperature", 0.7
+        );
+    }
 }
+
+

@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class HomeRecommendationOrchestrator {
-
+	
     private final RecommendationService recommendationService;
     private final CriteriaService criteriaService;
 
@@ -37,27 +37,43 @@ public class HomeRecommendationOrchestrator {
      * - 이 메서드는 반드시 RecommendationResponseDto를 반환해야 한다
      */
     public RecommendationResponseDto handle(RecommendationRequestDto request) {
-
+    	
+    	System.out.println("🔥 Orchestrator 진입");
+    	
         try {
             // 1️⃣ 요청 유효성 최소 방어
             if (request == null || request.getUserInput() == null) {
-                return RecommendationResponseDto.invalid(
+            	System.out.println("❌ 요청이 null 이거나 userInput 없음");
+            	return RecommendationResponseDto.invalid(
                         "요청이 올바르지 않습니다."
                 );
             }
-
+            
+            System.out.println("🔥 userInput = " + request.getUserInput());
+            
             // 2️⃣ 사용자 입력 → Criteria 생성
             RecommendationCriteria criteria =
                     criteriaService.createCriteria(
                             request.getUserInput()
                     );
+            
+            System.out.println("🔥 Criteria 생성 완료 = " + criteria);
 
-            // 3️⃣ 추천 흐름 위임 (Search → Evaluation → Decision)
-            return recommendationService.recommend(criteria);
+            // 3️⃣ 추천 흐름 위임
+            System.out.println("🔥 RecommendationService 호출 직전");
 
+            RecommendationResponseDto response =
+                    recommendationService.recommend(criteria);
+
+            System.out.println("🔥 RecommendationService 반환 완료");
+            System.out.println("🔥 Orchestrator 반환 직전");
+
+            return response;
         } catch (Exception e) {
             // 4️⃣ 하위 로직 예외 흡수 (서버 보호)
             // 로그는 추후 추가, 지금은 응답 안정성 우선
+        	System.out.println("💥 Orchestrator 예외 발생");
+            e.printStackTrace();
             return RecommendationResponseDto.invalid(
                     "추천 처리 중 오류가 발생했습니다."
             );

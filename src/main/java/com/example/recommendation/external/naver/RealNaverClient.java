@@ -50,7 +50,7 @@ public class RealNaverClient implements NaverClient {
     public List<Product> search(String keyword) {
         try {
             HttpHeaders headers = new HttpHeaders();
-            headers.add("X-Naver-Client-Id", "QbrRNVwRknp8MzN4py2r");
+            headers.add("X-Naver-Client-Id", clientId);
             headers.add("X-Naver-Client-Secret", clientSecret);
 
             String url = UriComponentsBuilder

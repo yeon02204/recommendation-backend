@@ -1,6 +1,9 @@
 package com.example.recommendation.external.openai;
 
 import com.example.recommendation.dto.AiCriteriaResultDto;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -31,14 +34,25 @@ public class OpenAiCriteriaClientImpl implements OpenAiCriteriaClient {
 
         String prompt = buildPrompt(userInput);
 
+        // ✅ Header 구성 (핵심)
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(apiKey);
+
+        // ✅ Body + Header 결합
+        HttpEntity<Object> requestEntity =
+                new HttpEntity<>(
+                        OpenAiRequestFactory.criteriaRequest(prompt, apiKey),
+                        headers
+                );
+
         String response =
                 restTemplate.postForObject(
                         "https://api.openai.com/v1/chat/completions",
-                        OpenAiRequestFactory.criteriaRequest(prompt, apiKey),
+                        requestEntity,
                         String.class
                 );
 
-        // ⚠️ 여기서는 해석하지 않는다
         // JSON → DTO 변환만 수행
         return OpenAiResponseParser.parseCriteria(response);
     }

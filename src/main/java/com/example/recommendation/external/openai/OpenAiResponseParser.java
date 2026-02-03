@@ -41,4 +41,17 @@ public class OpenAiResponseParser {
             throw new RuntimeException(e);
         }
     }
+    public static String parseExplanation(String response) {
+        try {
+            return objectMapper.readTree(response)
+                    .path("choices")
+                    .get(0)
+                    .path("message")
+                    .path("content")
+                    .asText();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

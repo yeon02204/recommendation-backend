@@ -40,6 +40,8 @@ public class RecommendationController {
     public RecommendationResponseDto recommendHome(
             @RequestBody RecommendationRequestDto request
     ) {
+    	System.out.println("🔥 Controller 진입");
+        System.out.println("🔥 userInput = " + request.getUserInput());
         if (request == null || request.getUserInput() == null || request.getUserInput().isBlank()) {
             return RecommendationResponseDto.invalid("입력이 비어 있습니다.");
         }
