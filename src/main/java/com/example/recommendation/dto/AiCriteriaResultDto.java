@@ -25,6 +25,7 @@ public class AiCriteriaResultDto {
     // ===== Getter =====
 
     public String getSearchKeyword() {
+    	
         return searchKeyword;
     }
 

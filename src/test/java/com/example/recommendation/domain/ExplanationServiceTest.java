@@ -1,4 +1,4 @@
-package com.example.recommendation;
+package com.example.recommendation.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import com.example.recommendation.domain.criteria.RecommendationCriteria;
 import com.example.recommendation.domain.evaluation.EvaluatedProduct;
 import com.example.recommendation.domain.explanation.ExplanationService;
+import com.example.recommendation.external.openai.FakeOpenAiExplanationClient;
 import com.example.recommendation.external.openai.OpenAiExplanationClient;
 
 class ExplanationServiceTest {
