@@ -1,4 +1,4 @@
-package com.example.recommendation;
+package com.example.recommendation.external.openai;
 
 import java.util.List;
 

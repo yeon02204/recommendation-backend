@@ -1,15 +1,17 @@
-package com.example.recommendation;
+package com.example.recommendation.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
 
 import com.example.recommendation.domain.criteria.CriteriaService;
 import com.example.recommendation.domain.criteria.RecommendationCriteria;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import com.example.recommendation.external.openai.FakeOpenAiCriteriaClient;
 
 class CriteriaServiceTest {
 
     private final CriteriaService criteriaService =
-            new CriteriaService(new FakeOpenAiClient());
+            new CriteriaService(new FakeOpenAiCriteriaClient());
 
     @Test
     void 사용자_입력에서_검색키워드가_그대로_설정된다() {
