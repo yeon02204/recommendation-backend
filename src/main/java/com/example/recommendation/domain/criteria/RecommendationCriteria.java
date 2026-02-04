@@ -26,68 +26,64 @@ import java.util.List;
 /**
  * 추천 판단 이전 단계의 "조건 데이터"를 담는 순수 도메인 객체
  *
- * - 판단 로직 없음
- * - 상태 플래그 없음
- * - setter 없음
- * - null / 빈 값 허용
+ * - 판단 로직 없음 - 상태 플래그 없음 - setter 없음 - null / 빈 값 허용
  */
 public class RecommendationCriteria {
 
-    private final String searchKeyword;
-    private final List<String> optionKeywords;
-    private final Integer priceMax;
-    private final String preferredBrand;
+	private final String searchKeyword;
+	private final List<String> optionKeywords;
+	private final Integer priceMax;
+	private final String preferredBrand;
 
-    public RecommendationCriteria(
-            String searchKeyword,
-            List<String> optionKeywords,
-            Integer priceMax,
-            String preferredBrand
-    ) {
-        this.searchKeyword = searchKeyword;
+	public RecommendationCriteria(String searchKeyword, List<String> optionKeywords, Integer priceMax,
+			String preferredBrand) {
+		this.searchKeyword = searchKeyword;
 
-        // 🔑 핵심 수정:
-        // optionKeywords는 null이 아닌 "빈 리스트"로 보존한다
-        // EvaluationService는 이 값을 그대로 신뢰한다
-        this.optionKeywords =
-                optionKeywords == null ? List.of() : List.copyOf(optionKeywords);
+		// 🔑 핵심 수정:
+		// optionKeywords는 null이 아닌 "빈 리스트"로 보존한다
+		// EvaluationService는 이 값을 그대로 신뢰한다
+		this.optionKeywords = optionKeywords == null ? List.of() : List.copyOf(optionKeywords);
 
-        this.priceMax = priceMax;
-        this.preferredBrand = preferredBrand;
-    }
+		this.priceMax = priceMax;
+		this.preferredBrand = preferredBrand;
+	}
 
-    public String getSearchKeyword() {
-        return searchKeyword;
-    }
+	public String getSearchKeyword() {
+		return searchKeyword;
+	}
 
-    public List<String> getOptionKeywords() {
-        return optionKeywords;
-    }
+	public List<String> getOptionKeywords() {
+		return optionKeywords;
+	}
 
-    public Integer getPriceMax() {
-        return priceMax;
-    }
+	public Integer getPriceMax() {
+		return priceMax;
+	}
 
-    public String getPreferredBrand() {
-        return preferredBrand;
-    }
+	public String getPreferredBrand() {
+		return preferredBrand;
+	}
 
-    // ===== 🔽 EvaluationService 호환용 파생 메서드 (핵심) =====
+	// ===== 🔽 EvaluationService 호환용 파생 메서드 (핵심) =====
 
-    /**
-     * 브랜드 선호 여부
-     * - 판단 아님
-     * - preferredBrand 값 존재 여부만 노출
-     */
-    public boolean isBrandPreferred() {
-        return preferredBrand != null && !preferredBrand.isBlank();
-    }
+	/**
+	 * 브랜드 선호 여부 - 판단 아님 - preferredBrand 값 존재 여부만 노출
+	 */
+	public boolean isBrandPreferred() {
+		return preferredBrand != null && !preferredBrand.isBlank();
+	}
 
-    /**
-     * 가격 조건 존재 여부
-     * - EvaluationService의 기존 로직 호환용
-     */
-    public String getPriceRange() {
-        return priceMax != null ? "HAS_LIMIT" : null;
-    }
+	/**
+	 * 가격 조건 존재 여부 - EvaluationService의 기존 로직 호환용
+	 */
+	public String getPriceRange() {
+		return priceMax != null ? "HAS_LIMIT" : null;
+	}
+
+	@Override
+	public String toString() {
+		return "RecommendationCriteria{" + "searchKeyword='" + searchKeyword + '\'' + ", optionKeywords="
+				+ optionKeywords + ", priceMax=" + priceMax + ", preferredBrand='" + preferredBrand + '\'' + '}';
+	}
+
 }

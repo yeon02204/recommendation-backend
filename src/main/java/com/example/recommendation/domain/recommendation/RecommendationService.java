@@ -8,13 +8,14 @@ import org.springframework.stereotype.Service;
 import com.example.recommendation.domain.criteria.RecommendationCriteria;
 import com.example.recommendation.domain.decision.Decision;
 import com.example.recommendation.domain.decision.DecisionMaker;
+import com.example.recommendation.domain.evaluation.EvaluatedProduct;
 import com.example.recommendation.domain.evaluation.EvaluationResult;
 import com.example.recommendation.domain.evaluation.EvaluationService;
 import com.example.recommendation.domain.explanation.ExplanationService;
+import com.example.recommendation.domain.search.SearchService;
 import com.example.recommendation.dto.RecommendationResponseDto;
 import com.example.recommendation.dto.RecommendationResponseDto.Item;
 import com.example.recommendation.external.naver.Product;
-import com.example.recommendation.domain.search.SearchService;
 
 @Service
 public class RecommendationService {
@@ -44,9 +45,22 @@ public class RecommendationService {
         List<Product> products =
                 searchService.search(criteria);
 
-        // 2️⃣ Evaluation
+//      2️⃣ Evaluation
         EvaluationResult result =
                 evaluationService.evaluate(products, criteria);
+        
+//        /* =====================================
+//         * 🔥 테스트 전용: Decision / Explanation 검증
+//         * ===================================== */
+//        EvaluationResult result = EvaluationResult.testOf(
+//                3,      // candidateCount
+//                90,     // topScore
+//                70,     // secondScore
+//                true,   // hasKeywordMatch
+//                true    // hasBrandMatch
+//        );
+        
+       
 
         // 3️⃣ Decision
         Decision decision =

@@ -1,9 +1,12 @@
 package com.example.recommendation.domain.decision;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
 import com.example.recommendation.domain.criteria.RecommendationCriteria;
 import com.example.recommendation.domain.evaluation.EvaluationResult;
 import com.example.recommendation.domain.explanation.ExplanationPolicy;
-import org.springframework.stereotype.Component;
 
 /**
  * [역할]
@@ -37,52 +40,63 @@ import org.springframework.stereotype.Component;
 @Component
 public class DecisionMaker {
 
+    private static final Logger log =
+            LoggerFactory.getLogger(DecisionMaker.class);
+
     public Decision decide(
             EvaluationResult result,
             RecommendationCriteria criteria
     ) {
 
-        // 1️⃣ 추천 불가: 후보 상품 없음
+        log.info("===== Decision Observation =====");
+        log.info("candidateCount={}", result.getCandidateCount());
+        log.info("topScore={}, secondScore={}",
+                 result.getTopScore(), result.getSecondScore());
+        log.info("hasKeywordMatch={}, hasBrandMatch={}",
+                 result.hasKeywordMatch(), result.hasBrandMatch());
+
+        Decision decision;
+
+        // 1️⃣ 추천 불가
         if (result.getCandidateCount() == 0) {
-            return Decision.invalid(
+            decision = Decision.invalid(
                     "추천 가능한 상품이 없습니다."
             );
         }
-
-        // 2️⃣ 후보가 1개뿐인 경우
-        // 비교 대상이 없으므로 ambiguous 판단 생략
-        if (result.getCandidateCount() == 1) {
-            return Decision.recommend(
+        // 2️⃣ 후보 1개
+        else if (result.getCandidateCount() == 1) {
+            decision = Decision.recommend(
                     "조건에 맞는 최선의 상품을 추천합니다."
             );
         }
-
-        // 3️⃣ 추천 근거 신호 부족
-        boolean hasNoSignal =
-                !result.hasKeywordMatch()
-                && !result.hasBrandMatch();
-
-        if (hasNoSignal) {
-            return Decision.requery(
+        // 3️⃣ 신호 부족
+        else if (!result.hasKeywordMatch() && !result.hasBrandMatch()) {
+            decision = Decision.requery(
                     "추천 근거가 부족합니다.",
                     ExplanationPolicy.REQUERY_NEED_MORE_CONDITION
             );
         }
-
-        // 4️⃣ 상위 후보 간 점수 차이가 작아 애매한 경우
-        boolean ambiguousTop =
-                result.getTopScore() - result.getSecondScore() <= 1;
-
-        if (ambiguousTop) {
-            return Decision.requery(
+        // 4️⃣ 애매함
+        else if (result.getTopScore() - result.getSecondScore() <= 1) {
+            decision = Decision.requery(
                     "후보 상품 간 차이가 명확하지 않습니다.",
                     ExplanationPolicy.REQUERY_NEED_MORE_CONDITION
             );
         }
+        // 5️⃣ 명확한 추천
+        else {
+            decision = Decision.recommend(
+                    "충분한 근거로 추천 가능합니다."
+            );
+        }
 
-        // 5️⃣ 명확한 추천 가능
-        return Decision.recommend(
-                "충분한 근거로 추천 가능합니다."
-        );
+        // ✅ 여기 핵심 로그
+        log.info("===== Decision Result =====");
+        log.info("type={}", decision.getType());
+        log.info("confidence={}", decision.getConfidence());
+        log.info("reason='{}'", decision.getReason());
+        log.info("explanationPolicy={}", decision.getExplanationPolicy());
+
+        return decision;
     }
 }

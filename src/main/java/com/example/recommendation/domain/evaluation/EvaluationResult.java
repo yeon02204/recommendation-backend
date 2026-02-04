@@ -80,6 +80,27 @@ public class EvaluationResult {
         );
     }
 
+    public static EvaluationResult testWithProducts(
+            List<EvaluatedProduct> products,
+            int topScore,
+            int secondScore,
+            boolean hasKeywordMatch,
+            boolean hasBrandMatch
+    ) {
+        return new EvaluationResult(
+                products,
+                products.size(),
+                topScore,
+                secondScore,
+                hasKeywordMatch,
+                hasBrandMatch
+        );
+    }
+    
+    
+    
+    
+    
     /* ========= getters ========= */
 
     public List<EvaluatedProduct> getProducts() {

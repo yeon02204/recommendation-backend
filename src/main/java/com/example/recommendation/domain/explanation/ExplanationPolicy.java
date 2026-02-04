@@ -7,6 +7,18 @@ package com.example.recommendation.domain.explanation;
  * - 문자열은 여기서만 매핑한다
  * - ExplanationService는 getMessage()만 호출
  */
+
+/**
+ * MVP 정책 고정용 enum.
+ *
+ * - 문구 실험 / A-B 테스트
+ * - 다국어 대응
+ * - 톤 조절
+ *
+ * ❗ 위 항목들은 고도화 단계에서만 수행
+ * ❗ MVP 단계에서는 정책 의미만 유지한다
+ */
+
 public enum ExplanationPolicy {
 
     REQUERY_MAINKEYWORD_MISSING,

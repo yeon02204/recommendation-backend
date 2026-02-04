@@ -4,6 +4,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.example.recommendation.domain.criteria.RecommendationCriteria;
 import com.example.recommendation.external.naver.Product;
@@ -51,9 +53,24 @@ import com.example.recommendation.external.naver.Product;
  * 이후에만 가능하다.
  */
 
+/**
+ * [POLICY GUARD]
+ *
+ * ExplanationPolicy → 사용자 노출 문장은
+ * 반드시 이 Service를 통해서만 생성한다.
+ *
+ * ❌ 외부 클래스에서 policy.getMessage() 직접 호출 금지
+ * ❌ if / switch 로 문장 생성 금지
+ *
+ * 정책 ↔ 문장 매핑 단일 책임 보장용
+ */
+
 @Service
 public class EvaluationService {
-
+	
+    private static final Logger log =
+            LoggerFactory.getLogger(EvaluationService.class);
+    
     public EvaluationResult evaluate(
             List<Product> products,
             RecommendationCriteria criteria
@@ -120,6 +137,23 @@ public class EvaluationService {
                         )
                         .limit(5)
                         .toList();
+        log.info("===== Evaluation Observation Start =====");
+
+        for (int i = 0; i < evaluatedProducts.size(); i++) {
+            EvaluatedProduct p = evaluatedProducts.get(i);
+
+            log.info(
+                "[EVAL:{}] title='{}', score={}, brandMatch={}, keywordMatch={}",
+                i,
+                p.getProduct().getTitle(),
+                p.getScore(),
+                p.hasBrandMatch(),
+                p.hasKeywordMatch()
+            );
+        }
+
+        log.info("===== Evaluation Observation End =====");
+        
 
         /* =========================
          * 4. 집합 특성 계산 (사실)
