@@ -7,6 +7,9 @@ import com.example.recommendation.dto.RecommendationRequestDto;
 import com.example.recommendation.dto.RecommendationResponseDto;
 import org.springframework.stereotype.Component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * [역할]
  * - 추천 요청의 전체 흐름을 조율하는 조정자
@@ -20,6 +23,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class HomeRecommendationOrchestrator {
+	private static final Logger log =
+	        LoggerFactory.getLogger(HomeRecommendationOrchestrator.class);
 	
     private final RecommendationService recommendationService;
     private final CriteriaService criteriaService;
@@ -57,8 +62,8 @@ public class HomeRecommendationOrchestrator {
                             request.getUserInput()
                     );
             
-            System.out.println("🔥 Criteria 생성 완료 = " + criteria);
-
+//            System.out.println("🔥 Criteria 생성 완료 = " + criteria);
+            log.info("===== Criteria Observation =====\n{}", criteria);
             // 3️⃣ 추천 흐름 위임
             System.out.println("🔥 RecommendationService 호출 직전");
 

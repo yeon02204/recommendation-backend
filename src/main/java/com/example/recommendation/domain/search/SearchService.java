@@ -57,6 +57,14 @@ public class SearchService {
     
     public List<Product> search(RecommendationCriteria criteria) {
         String keyword = criteria.getSearchKeyword();
+        
+        // optionKeywords가 있으면 결합 (추론 ❌, 가공 ⭕)
+        if (criteria.getOptionKeywords() != null
+            && !criteria.getOptionKeywords().isEmpty()) {
+
+            keyword = keyword + " " + String.join(" ", criteria.getOptionKeywords());
+        }
+        
         return naverClient.search(keyword);
     }
 

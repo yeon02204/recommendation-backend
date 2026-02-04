@@ -14,12 +14,12 @@ import org.springframework.stereotype.Component;
 @Profile("test") // 테스트에서는 Fake를 쓰게 함 (프로젝트가 다른 프로파일 쓰면 그에 맞춰 변경)
 public class FakeNaverClient implements NaverClient {
 
-    @Override
-    public List<Product> search(String keyword) {
-        return List.of(
-            new Product(1L, "무선 헤드셋", "Sony"),
-            new Product(2L, "유선 헤드셋", null),
-            new Product(3L, "블루투스 이어폰", "Samsung")
-        );
-    }
+	@Override
+	public List<Product> search(String keyword) {
+	    return List.of(
+	        new Product(1L, "삼성 가벼운 노트북", "Samsung"),
+	        new Product(2L, "LG 가벼운 노트북", "LG"),
+	        new Product(3L, "중고 데스크탑", null)
+	    );
+	}
 }
