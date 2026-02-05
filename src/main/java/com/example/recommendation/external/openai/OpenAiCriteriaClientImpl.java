@@ -69,12 +69,23 @@ public class OpenAiCriteriaClientImpl implements OpenAiCriteriaClient {
             아래 JSON 형식으로만 응답하라.
 
             추측 금지.
+            
+            명시적 가격 표현(예: 50만원 이하, 100만 원 미만, 50만원에서 100만원 사이 등)은 숫자로 변환 허용 ⭕
+            
             값이 없으면 null 또는 빈 배열을 사용하라.
             설명 문장 금지.
             JSON 외 출력 금지.
 
             사용자 입력:
             "%s"
+        	
+        	searchKeyword는 상품군 명사만 추출해라
+
+        	형용사/속성은 optionKeywords로 분리 해라
+        	
+        	브랜드명(예: 로지텍, 삼성, 애플 등)은
+        		optionKeywords에 넣지 말고
+        		preferredBrand 필드에만 넣어라.
 
             아래 JSON 스키마를 정확히 따라라:
 

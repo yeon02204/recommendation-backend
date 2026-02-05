@@ -13,28 +13,35 @@ public class Product {
     private final Long id;
     private final String title;
 
-    // 테스트/기존 코드 호환용 (현재 MVP에서는 사용하지 않더라도 남겨둠)
+    // 네이버 원본 데이터 (프론트 전달용)
+    private final String imageUrl;
+    private final String link;
+
+    // 테스트/기존 코드 호환용
     private final int price;
     private final boolean hasBrand;
 
-    // RealNaverClient 등에서 사용할 수 있도록 문자열 brand도 보관 (nullable)
+    // 브랜드 문자열 (nullable)
     private final String brand;
 
     /**
      * ✅ 기존 테스트 계약 호환 생성자
-     * (long, String, int, boolean)
+     * (Long, String, int, boolean)
      */
     public Product(Long id, String title, int price, boolean hasBrand) {
         this.id = id;
         this.title = title;
         this.price = price;
         this.hasBrand = hasBrand;
-        // boolean만 주어진 경우 brand는 의미 해석하지 않고 최소 표현으로만 둔다
         this.brand = hasBrand ? "UNKNOWN" : null;
+
+        // 프론트용 필드는 테스트에서는 없음
+        this.imageUrl = null;
+        this.link = null;
     }
 
     /**
-     * ✅ RealNaverClient 매핑용 생성자
+     * ✅ RealNaverClient 매핑용 생성자 (기존)
      * (Long, String, String)
      */
     public Product(Long id, String title, String brand) {
@@ -42,7 +49,31 @@ public class Product {
         this.title = title;
         this.brand = brand;
         this.hasBrand = brand != null && !brand.isBlank();
-        this.price = 0; // MVP에서 가격은 사용하지 않음 (호환 필드만 유지)
+        this.price = 0;
+
+        this.imageUrl = null;
+        this.link = null;
+    }
+
+    /**
+     * ✅ RealNaverClient 실제 사용 생성자
+     * (네이버 응답 그대로 담기)
+     */
+    public Product(
+            Long id,
+            String title,
+            String brand,
+            String imageUrl,
+            String link
+    ) {
+        this.id = id;
+        this.title = title;
+        this.brand = brand;
+        this.hasBrand = brand != null && !brand.isBlank();
+        this.price = 0;
+
+        this.imageUrl = imageUrl;
+        this.link = link;
     }
 
     public Long getId() {
@@ -53,18 +84,25 @@ public class Product {
         return title;
     }
 
-    // 기존 테스트/코드 호환용
+    // 테스트/기존 코드 호환용
     public int getPrice() {
         return price;
     }
 
-    // RealNaverClient에서 들어온 brand 확인이 필요하면 사용 가능
     public String getBrand() {
         return brand;
     }
 
-    // 정책: 브랜드 "존재 여부"만 의미 있음
     public boolean hasBrand() {
         return hasBrand;
+    }
+
+    // ✅ 프론트 전달용
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public String getLink() {
+        return link;
     }
 }

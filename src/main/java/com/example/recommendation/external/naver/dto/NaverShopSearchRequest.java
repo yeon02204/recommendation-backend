@@ -4,19 +4,19 @@ package com.example.recommendation.external.naver.dto;
  * 네이버 쇼핑 API 요청 DTO
  *
  * 역할:
- * - HTTP 요청 파라미터를 명시적으로 표현
+ * - 네이버 쇼핑 검색 요청 파라미터를 명시적으로 표현
  *
- * 금지:
+ * 원칙:
  * - 판단 ❌
- * - 키워드 조합 ❌
- * - 의미 해석 ❌
+ * - 키워드 해석 ❌
+ * - 옵션 선택 ❌
  */
 public class NaverShopSearchRequest {
 
-    private final String query;     // mainKeyword 그대로
+    private final String query;     // 최종 검색어 (이미 조합된 문자열)
     private final int display;      // 30 고정
     private final String sort;      // sim 고정
-    private final Integer maxPrice; // priceMax (nullable)
+    private final Integer maxPrice; // nullable
 
     private NaverShopSearchRequest(
             String query,
@@ -36,8 +36,8 @@ public class NaverShopSearchRequest {
     ) {
         return new NaverShopSearchRequest(
                 query,
-                30,     // 정책 고정
-                "sim",  // 정책 고정
+                30,
+                "sim",
                 maxPrice
         );
     }

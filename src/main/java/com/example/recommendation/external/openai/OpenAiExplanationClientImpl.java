@@ -2,6 +2,8 @@ package com.example.recommendation.external.openai;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -13,6 +15,9 @@ import com.example.recommendation.domain.evaluation.EvaluatedProduct;
 
 @Component
 public class OpenAiExplanationClientImpl implements OpenAiExplanationClient {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(OpenAiExplanationClientImpl.class);
 
     private final RestTemplate restTemplate;
     private final String apiKey = System.getenv("OPENAI_API_KEY");
@@ -29,26 +34,34 @@ public class OpenAiExplanationClientImpl implements OpenAiExplanationClient {
 
         String prompt = buildPrompt(products, criteria);
 
-        // ✅ Header 구성 (핵심)
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(apiKey);
+        try {
+            // Header
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(apiKey);
 
-        // ✅ Body + Header 결합
-        HttpEntity<Object> requestEntity =
-                new HttpEntity<>(
-                        OpenAiRequestFactory.explanationRequest(prompt, apiKey),
-                        headers
-                );
+            HttpEntity<Object> requestEntity =
+                    new HttpEntity<>(
+                            OpenAiRequestFactory.explanationRequest(prompt, apiKey),
+                            headers
+                    );
 
-        String response =
-                restTemplate.postForObject(
-                        "https://api.openai.com/v1/chat/completions",
-                        requestEntity,
-                        String.class
-                );
+            String response =
+                    restTemplate.postForObject(
+                            "https://api.openai.com/v1/chat/completions",
+                            requestEntity,
+                            String.class
+                    );
 
-        return OpenAiResponseParser.parseExplanation(response);
+            return OpenAiResponseParser.parseExplanation(response);
+
+        } catch (Exception e) {
+            // 🔥 핵심: 설명 생성 실패는 "치명적 오류"가 아님
+            log.error("OpenAI explanation generation failed", e);
+
+            // ✅ fallback 설명 (UX 유지)
+            return "사용자의 조건에 맞는 상품들을 기준으로 추천한 결과입니다.";
+        }
     }
 
     /**

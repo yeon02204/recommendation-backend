@@ -37,46 +37,24 @@ public class RecommendationService {
         this.explanationService = explanationService;
     }
 
-    public RecommendationResponseDto recommend(
-            RecommendationCriteria criteria
-    ) {
+    public RecommendationResponseDto recommend(RecommendationCriteria criteria) {
 
         // 1️⃣ Search
-        List<Product> products =
-                searchService.search(criteria);
+        List<Product> products = searchService.search(criteria);
 
-//      2️⃣ Evaluation
-        EvaluationResult result =
-                evaluationService.evaluate(products, criteria);
-        
-//        /* =====================================
-//         * 🔥 테스트 전용: Decision / Explanation 검증
-//         * ===================================== */
-//        EvaluationResult result = EvaluationResult.testOf(
-//                3,      // candidateCount
-//                90,     // topScore
-//                70,     // secondScore
-//                true,   // hasKeywordMatch
-//                true    // hasBrandMatch
-//        );
-        
-       
+        // 2️⃣ Evaluation
+        EvaluationResult result = evaluationService.evaluate(products, criteria);
 
         // 3️⃣ Decision
-        Decision decision =
-                decisionMaker.decide(result, criteria);
+        Decision decision = decisionMaker.decide(result, criteria);
 
-        // 4️⃣ Response 조립
+        // 4️⃣ Response
         switch (decision.getType()) {
 
             case INVALID:
-                return RecommendationResponseDto.invalid(
-                        decision.getReason()
-                );
+                return RecommendationResponseDto.invalid(decision.getReason());
 
             case REQUERY:
-                // ⚠️ Decision은 문자열을 가지지 않는다
-                // 설명 문구는 ExplanationPolicy 기준으로 생성
                 return RecommendationResponseDto.requery(
                         explanationService.generateByPolicy(
                                 decision.getExplanationPolicy()
@@ -84,30 +62,29 @@ public class RecommendationService {
                 );
 
             case RECOMMEND:
-                // 4-1. 설명 문장 생성 (AI 호출은 여기서만)
+                // 상단 설명 문장 (공통)
                 String explanation =
                         explanationService.generateExplanation(
                                 result.getProducts(),
                                 criteria
                         );
 
-                // 4-2. Domain → Response Item 변환
-                // ⚠️ MVP 단계에서는 productId를 사용하지 않는다
+                // 카드용 아이템 (네이버 데이터 그대로, 표현 계층 확장)
                 List<Item> items =
                         result.getProducts().stream()
-                                .map(p ->
-                                        new Item(
-                                                null,
-                                                explanation
-                                        )
-                                )
+                                .map(EvaluatedProduct::getProduct)
+                                .map(p -> new Item(
+                                        p.getId(),          // productId
+                                        p.getTitle(),       // title
+                                        p.getImageUrl(),    // imageUrl
+                                        p.getLink(),        // link
+                                        p.getPrice(),       // price (기존 호환)
+                                        null,               // mallName (아직 Product에 없음)
+                                        explanation         // 공통 설명 문장
+                                ))
                                 .collect(Collectors.toList());
 
-                // 4-3. 외부 계약 DTO 반환
-                return RecommendationResponseDto.recommend(
-                        items,
-                        explanation
-                );
+                return RecommendationResponseDto.recommend(items, explanation);
 
             default:
                 throw new IllegalStateException(
