@@ -35,8 +35,6 @@ public class DecisionMaker {
         log.info("candidateCount={}", result.getCandidateCount());
         log.info("topScore={}, secondScore={}",
                 result.getTopScore(), result.getSecondScore());
-        log.info("hasKeywordMatch={}, hasBrandMatch={}",
-                result.hasKeywordMatch(), result.hasBrandMatch());
 
         Decision decision;
 
@@ -50,7 +48,7 @@ public class DecisionMaker {
         }
 
         /* =========================
-         * 2️⃣ 후보 1개: 즉시 추천
+         * 2️⃣ 후보 1개: 즉시 추천 (예외)
          * ========================= */
         else if (result.getCandidateCount() == 1) {
             decision = Decision.recommend(
@@ -59,40 +57,11 @@ public class DecisionMaker {
         }
 
         /* =========================
-         * 3️⃣ 키워드 신호만 있어도 추천 (⭐ 추가)
+         * 3️⃣ 애매함 (MVP 고정 정책)
          * ========================= */
-        else if (result.hasKeywordMatch()) {
-            decision = Decision.recommend(
-                    "조건에 부합하는 상품을 추천합니다."
-            );
-        }
-
-        /* =========================
-         * 4️⃣ 신호 부족 (완전 무신호)
-         * ========================= */
-        else if (!result.hasKeywordMatch() && !result.hasBrandMatch()) {
-            decision = Decision.requery(
-                    "추천 근거가 부족합니다.",
-                    ExplanationPolicy.REQUERY_NEED_MORE_CONDITION
-            );
-        }
-
-        /* =====================================================
-         * 5️⃣ 브랜드 동률 정책 (기존 4번)
-         * ===================================================== */
         else if (
-                result.hasBrandMatch()
-                && result.getTopScore() == result.getSecondScore()
+                result.getTopScore() - result.getSecondScore() <= 1
         ) {
-            decision = Decision.recommend(
-                    "선호 브랜드 기준으로 추천합니다."
-            );
-        }
-
-        /* =========================
-         * 6️⃣ 애매함
-         * ========================= */
-        else if (result.getTopScore() - result.getSecondScore() <= 1) {
             decision = Decision.requery(
                     "후보 상품 간 차이가 명확하지 않습니다.",
                     ExplanationPolicy.REQUERY_NEED_MORE_CONDITION
@@ -100,14 +69,13 @@ public class DecisionMaker {
         }
 
         /* =========================
-         * 7️⃣ 명확한 추천
+         * 4️⃣ 명확한 추천
          * ========================= */
         else {
             decision = Decision.recommend(
                     "충분한 근거로 추천 가능합니다."
             );
         }
-
 
         /* =========================
          * 결과 로그
