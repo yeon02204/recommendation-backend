@@ -26,9 +26,17 @@ public class ConversationContextService {
      */
     public void merge(RecommendationCriteria newCriteria) {
 
+        // 🔥 NEW: 상품 주제 변경 감지
+        if (newCriteria.getSearchKeyword() != null
+                && context.getConfirmedKeyword() != null
+                && !newCriteria.getSearchKeyword()
+                        .equals(context.getConfirmedKeyword())) {
+
+            reset();
+        }
+
         context.nextTurn();
 
-        // 🔥 턴 초과 여부 판단은 Context 내부 정보만 활용
         if (context.shouldReset()) {
             reset();
             return;
@@ -41,11 +49,12 @@ public class ConversationContextService {
                         newCriteria.getPriceMax(),
                         newCriteria.getPreferredBrand(),
                         newCriteria.getIntentType(),
-                        null // commandType 제거
+                        null
                 );
 
         context.merge(criteriaForMerge);
     }
+
 
     /**
      * 병합 + 결과 반환 (편의 메서드)
