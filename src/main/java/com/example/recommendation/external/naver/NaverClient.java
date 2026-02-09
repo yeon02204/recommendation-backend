@@ -2,6 +2,8 @@ package com.example.recommendation.external.naver;
 
 import java.util.List;
 
+import com.example.recommendation.external.naver.dto.Product;
+
 /**
  * 네이버 쇼핑 API 호출을 추상화한 외부 연동 인터페이스
  *

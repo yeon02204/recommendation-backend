@@ -2,8 +2,9 @@ package com.example.recommendation.domain.explanation;
 
 import com.example.recommendation.domain.criteria.RecommendationCriteria;
 import com.example.recommendation.domain.evaluation.EvaluatedProduct;
+import com.example.recommendation.external.naver.dto.Product;
 import com.example.recommendation.external.openai.FakeOpenAiExplanationClient;
-import com.example.recommendation.external.naver.Product;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

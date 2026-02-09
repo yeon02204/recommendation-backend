@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.example.recommendation.external.naver.dto.Product;
+
 /**
  * [역할]
  * - 네이버 쇼핑 API 호출 전용 (prod 프로파일)

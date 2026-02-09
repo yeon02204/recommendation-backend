@@ -7,7 +7,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.example.recommendation.domain.criteria.RecommendationCriteria;
-import com.example.recommendation.external.naver.Product;
+import com.example.recommendation.external.naver.dto.Product;
 
 /**
  * [정책 테스트]

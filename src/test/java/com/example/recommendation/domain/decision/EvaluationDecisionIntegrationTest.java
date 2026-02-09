@@ -4,7 +4,8 @@ import com.example.recommendation.domain.criteria.ConversationContext;
 import com.example.recommendation.domain.criteria.RecommendationCriteria;
 import com.example.recommendation.domain.evaluation.EvaluationResult;
 import com.example.recommendation.domain.evaluation.EvaluationService;
-import com.example.recommendation.external.naver.Product;
+import com.example.recommendation.external.naver.dto.Product;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

@@ -3,7 +3,7 @@ package com.example.recommendation.domain.evaluation;
 import java.util.List;
 import java.util.Set;
 
-import com.example.recommendation.external.naver.Product;
+import com.example.recommendation.external.naver.dto.Product;
 
 public class EvaluatedProduct {
 

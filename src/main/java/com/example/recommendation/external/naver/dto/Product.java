@@ -1,4 +1,4 @@
-package com.example.recommendation.external.naver;
+package com.example.recommendation.external.naver.dto;
 
 /**
  * [역할]

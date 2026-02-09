@@ -6,6 +6,8 @@ import java.util.List;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import com.example.recommendation.external.naver.dto.Product;
+
 /**
  * [역할]
  * - 네이버 API 연동 전 테스트용 더미 구현체
