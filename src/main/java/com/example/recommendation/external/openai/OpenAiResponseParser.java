@@ -1,46 +1,49 @@
 package com.example.recommendation.external.openai;
 
+import java.util.Map;
+
 import com.example.recommendation.dto.AiCriteriaResultDto;
 
-import tools.jackson.databind.JsonNode;
+import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
 /**
  * OpenAI 응답 파싱 전용
  *
- * [격리 전략 설명]
- * - Spring Boot 4.x + Jackson 최신 버전에서
- *   JsonNode 접근자 API는 전면 deprecated 상태
- * - 본 클래스는 해당 deprecated 사용을
- *   "의도적으로 한 지점에 격리"하기 위한 전용 위치다.
- *
- * 의미 해석 ❌
- * 기본값 처리 ❌
- * fallback ❌
+ * [격리 전략]
+ * - JsonNode 직접 조작 ❌
+ * - 의미 해석 ❌
+ * - 판단 ❌
+ * - fallback ❌
  */
 public class OpenAiResponseParser {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    @SuppressWarnings("deprecation") // 🔒 의도적 격리
+    /* =========================
+       Criteria 파싱 (기존)
+       ========================= */
+
     public static AiCriteriaResultDto parseCriteria(String response) {
         try {
-            JsonNode root = objectMapper.readTree(response);
-
-            String content =
-                    root.path("choices")
-                        .get(0)
-                        .path("message")
-                        .path("content")
-                        .asText(); // deprecated지만 의미적으로 가장 중립
+            String content = objectMapper.readTree(response)
+                    .path("choices")
+                    .get(0)
+                    .path("message")
+                    .path("content")
+                    .asText();
 
             return objectMapper.readValue(content, AiCriteriaResultDto.class);
 
         } catch (Exception e) {
-            // Criteria 계층에서 판단하지 않는다
             throw new RuntimeException(e);
         }
     }
+
+    /* =========================
+       상단 설명 파싱 (기존)
+       ========================= */
+
     public static String parseExplanation(String response) {
         try {
             return objectMapper.readTree(response)
@@ -49,6 +52,40 @@ public class OpenAiResponseParser {
                     .path("message")
                     .path("content")
                     .asText();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /* =========================
+       카드 설명 파싱 (🔥 안정판)
+       ========================= */
+
+    public static Map<Long, String> parseCardExplanationMap(String response) {
+        try {
+            String content = objectMapper.readTree(response)
+                    .path("choices")
+                    .get(0)
+                    .path("message")
+                    .path("content")
+                    .asText();
+
+            // 🔑 핵심: JsonNode 순회 ❌ → Map 직접 파싱
+            Map<String, String> raw =
+                    objectMapper.readValue(
+                            content,
+                            new TypeReference<Map<String, String>>() {}
+                    );
+
+            // key String → Long 변환
+            return raw.entrySet().stream()
+                    .collect(
+                            java.util.stream.Collectors.toMap(
+                                    e -> Long.valueOf(e.getKey()),
+                                    Map.Entry::getValue
+                            )
+                    );
 
         } catch (Exception e) {
             throw new RuntimeException(e);

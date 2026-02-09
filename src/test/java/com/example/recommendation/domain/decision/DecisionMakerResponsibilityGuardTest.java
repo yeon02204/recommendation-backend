@@ -1,23 +1,22 @@
 package com.example.recommendation.domain.decision;
 
+import com.example.recommendation.domain.criteria.ConversationContext;
 import com.example.recommendation.domain.criteria.RecommendationCriteria;
 import com.example.recommendation.domain.evaluation.EvaluationResult;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
-
-class DecisionAmbiguousPolicyTest {
+class DecisionMakerResponsibilityGuardTest {
 
     private final DecisionMaker decisionMaker = new DecisionMaker();
 
     @Test
-    void 상위_점수_차이가_1이하면_REQUERY다() {
+    void decisionMaker는_products없이도_판단만_수행할_수_있다() {
         // given
         EvaluationResult result =
                 EvaluationResult.testOf(
-                        2,      // candidateCount
+                        3,      // candidateCount
                         2,      // topScore
                         1,      // secondScore
                         true,   // hasKeywordMatch
@@ -27,16 +26,20 @@ class DecisionAmbiguousPolicyTest {
         RecommendationCriteria criteria =
                 new RecommendationCriteria(
                         "헤드셋",
-                        List.of("무선"),
+                        null,
                         null,
                         null
                 );
 
+        ConversationContext context = new ConversationContext();
+
         // when
-        Decision decision = decisionMaker.decide(result, criteria);
+        DecisionResult decisionResult =
+                decisionMaker.decide(context, criteria, result);
 
         // then
-        assertThat(decision.getType())
-                .isEqualTo(DecisionType.REQUERY);
+        assertThat(decisionResult).isNotNull();
+        assertThat(decisionResult.getDecision().getType())
+                .isEqualTo(DecisionType.RECOMMEND);
     }
 }

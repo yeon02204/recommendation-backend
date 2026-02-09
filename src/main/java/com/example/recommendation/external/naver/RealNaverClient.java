@@ -1,6 +1,5 @@
 package com.example.recommendation.external.naver;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -23,6 +22,9 @@ import org.springframework.web.util.UriComponentsBuilder;
  * [정책]
  * - query는 SearchService에서 완성된 문자열 그대로 사용
  * - 이 클래스는 인코딩 + 호출만 담당
+ * 
+ * 🔥 2025-02-09 업데이트:
+ * - start 파라미터 지원 (RETRY_SEARCH)
  */
 @Component
 @Profile("prod")
@@ -30,6 +32,9 @@ public class RealNaverClient implements NaverClient {
 
     private static final Logger log =
             LoggerFactory.getLogger(RealNaverClient.class);
+
+    private static final int DEFAULT_DISPLAY = 30;
+    private static final int DEFAULT_START = 1;
 
     private final RestTemplate restTemplate;
     private final String clientId;
@@ -51,6 +56,14 @@ public class RealNaverClient implements NaverClient {
 
     @Override
     public List<Product> search(String keyword) {
+        return search(keyword, DEFAULT_START);
+    }
+
+    @Override
+    public List<Product> search(String keyword, int start) {
+
+        log.info("[RealNaverClient] search - keyword='{}', start={}", 
+                 keyword, start);
 
         try {
             // 1️⃣ 인증 헤더
@@ -58,14 +71,17 @@ public class RealNaverClient implements NaverClient {
             headers.add("X-Naver-Client-Id", clientId);
             headers.add("X-Naver-Client-Secret", clientSecret);
 
-            // 2️⃣ URL 구성 (🔥 핵심 수정 포인트)
+            // 2️⃣ URL 구성 (🔥 start 파라미터 추가!)
             String url = UriComponentsBuilder
                     .fromUriString("https://openapi.naver.com/v1/search/shop.json")
                     .queryParam("query", keyword)   // 한글 그대로
-                    .queryParam("display", 30)
+                    .queryParam("display", DEFAULT_DISPLAY)
+                    .queryParam("start", start)     // 🔥 추가!
                     .queryParam("sort", "sim")
                     .build(false) 
                     .toUriString();
+
+            log.debug("[RealNaverClient] API URL: {}", url);
 
             HttpEntity<Void> request = new HttpEntity<>(headers);
 
@@ -81,15 +97,21 @@ public class RealNaverClient implements NaverClient {
             // 4️⃣ 매핑
             NaverSearchResponse body = response.getBody();
             if (body == null || body.getItems() == null) {
+                log.warn("[RealNaverClient] Empty response");
                 return List.of();
             }
 
-            return body.getItems().stream()
+            List<Product> products = body.getItems().stream()
                     .map(this::mapToProduct)
                     .toList();
 
+            log.info("[RealNaverClient] Found {} products", products.size());
+
+            return products;
+
         } catch (Exception e) {
-            log.error("Naver API call failed", e);
+            log.error("[RealNaverClient] API call failed - keyword='{}', start={}", 
+                      keyword, start, e);
             return List.of();
         }
     }

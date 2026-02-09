@@ -1,95 +1,67 @@
 package com.example.recommendation.domain.recommendation;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.example.recommendation.domain.criteria.RecommendationCriteria;
-import com.example.recommendation.domain.decision.Decision;
-import com.example.recommendation.domain.decision.DecisionMaker;
-import com.example.recommendation.domain.evaluation.EvaluatedProduct;
 import com.example.recommendation.domain.evaluation.EvaluationResult;
 import com.example.recommendation.domain.evaluation.EvaluationService;
-import com.example.recommendation.domain.explanation.ExplanationService;
-import com.example.recommendation.domain.search.SearchService;
-import com.example.recommendation.dto.RecommendationResponseDto;
-import com.example.recommendation.dto.RecommendationResponseDto.Item;
 import com.example.recommendation.external.naver.Product;
 
+/**
+ * ⚠️ IMPORTANT
+ *
+ * RecommendationService는 "검색 이후(post-search)" 단계 전용이다.
+ *
+ * [책임]
+ * - 검색 결과(Product)를 평가(Evaluation)한다.
+ *
+ * [금지]
+ * ❌ 검색 전 판단
+ * ❌ DecisionMaker 호출
+ * ❌ 상태 전이 판단
+ *
+ * 검색 전 판단(HOME / SEARCH 분기)은
+ * Orchestrator / SearchReadiness 단계에서 이미 완료되어야 한다.
+ */
 @Service
 public class RecommendationService {
 
-    private final SearchService searchService;
+    private static final Logger log =
+            LoggerFactory.getLogger(RecommendationService.class);
+
     private final EvaluationService evaluationService;
-    private final DecisionMaker decisionMaker;
-    private final ExplanationService explanationService;
 
     public RecommendationService(
-            SearchService searchService,
-            EvaluationService evaluationService,
-            DecisionMaker decisionMaker,
-            ExplanationService explanationService
+            EvaluationService evaluationService
     ) {
-        this.searchService = searchService;
         this.evaluationService = evaluationService;
-        this.decisionMaker = decisionMaker;
-        this.explanationService = explanationService;
     }
 
-    public RecommendationResponseDto recommend(RecommendationCriteria criteria) {
+    /**
+     * 검색 결과를 받아 Evaluation만 수행한다.
+     *
+     * @param criteria 검색 조건
+     * @param products 검색된 상품 목록 (이미 검색 완료 상태)
+     * @return EvaluationResult (사실 데이터)
+     */
+    public EvaluationResult evaluate(
+            RecommendationCriteria criteria,
+            List<Product> products
+    ) {
+        log.info("[RecommendationService] evaluate start");
+        log.info("[RecommendationService] productsCount={}",
+                products == null ? 0 : products.size());
 
-        // 1️⃣ Search
-        List<Product> products = searchService.search(criteria);
+        EvaluationResult evaluationResult =
+                evaluationService.evaluate(products, criteria);
 
-        // 2️⃣ Evaluation
-        EvaluationResult result = evaluationService.evaluate(products, criteria);
+        log.info("[RecommendationService] evaluation done candidateCount={}",
+                evaluationResult.getCandidateCount());
 
-        // 3️⃣ Decision
-        Decision decision = decisionMaker.decide(result, criteria);
-
-        // 4️⃣ Response
-        switch (decision.getType()) {
-
-            case INVALID:
-                return RecommendationResponseDto.invalid(decision.getReason());
-
-            case REQUERY:
-                return RecommendationResponseDto.requery(
-                        explanationService.generateByPolicy(
-                                decision.getExplanationPolicy()
-                        )
-                );
-
-            case RECOMMEND:
-                // 상단 설명 문장 (공통)
-                String explanation =
-                        explanationService.generateExplanation(
-                                result.getProducts(),
-                                criteria
-                        );
-
-                // 카드용 아이템 (네이버 데이터 그대로, 표현 계층 확장)
-                List<Item> items =
-                        result.getProducts().stream()
-                                .map(EvaluatedProduct::getProduct)
-                                .map(p -> new Item(
-                                        p.getId(),          // productId
-                                        p.getTitle(),       // title
-                                        p.getImageUrl(),    // imageUrl
-                                        p.getLink(),        // link
-                                        p.getPrice(),       // price (기존 호환)
-                                        null,               // mallName (아직 Product에 없음)
-                                        explanation         // 공통 설명 문장
-                                ))
-                                .collect(Collectors.toList());
-
-                return RecommendationResponseDto.recommend(items, explanation);
-
-            default:
-                throw new IllegalStateException(
-                        "Unhandled decision type: " + decision.getType()
-                );
-        }
+        return evaluationResult;
     }
 }

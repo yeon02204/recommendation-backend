@@ -1,5 +1,6 @@
 package com.example.recommendation.domain.decision;
 
+import com.example.recommendation.domain.criteria.ConversationContext;
 import com.example.recommendation.domain.criteria.RecommendationCriteria;
 import com.example.recommendation.domain.evaluation.EvaluationResult;
 import com.example.recommendation.domain.evaluation.EvaluationService;
@@ -14,26 +15,34 @@ public class EvaluationDecisionIntegrationTest {
 
     @Test
     void empty_products_flow_evaluation_to_decision() {
-        // given: 검색 결과 0개(=상품 없음) + 빈 criteria
+        // given: 검색 결과 0개 + 빈 criteria
         List<Product> products = List.of();
-        RecommendationCriteria criteria = new RecommendationCriteria(
-        null,        // searchKeyword
-        List.of(),   // optionKeywords
-        null,        // priceMax
-        null         // preferredBrand
-);
 
+        RecommendationCriteria criteria =
+                new RecommendationCriteria(
+                        null,
+                        List.of(),
+                        null,
+                        null
+                );
 
+        ConversationContext context = new ConversationContext();
         EvaluationService evaluationService = new EvaluationService();
         DecisionMaker decisionMaker = new DecisionMaker();
 
-        // when: Evaluation 결과를 Decision이 그대로 소비
-        EvaluationResult result = evaluationService.evaluate(products, criteria);
-        Decision decision = decisionMaker.decide(result, criteria);
+        // when
+        EvaluationResult result =
+                evaluationService.evaluate(products, criteria);
 
-        // then: 후보 0개면 INVALID
+        DecisionResult decisionResult =
+                decisionMaker.decide(context, criteria, result);
+
+        // then
         assertNotNull(result);
-        assertNotNull(decision);
-        assertEquals(DecisionType.INVALID, decision.getType());
+        assertNotNull(decisionResult);
+        assertEquals(
+                DecisionType.INVALID,
+                decisionResult.getDecision().getType()
+        );
     }
 }

@@ -1,9 +1,9 @@
 package com.example.recommendation.external.openai;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -12,80 +12,129 @@ import org.springframework.web.client.RestTemplate;
 
 import com.example.recommendation.domain.criteria.RecommendationCriteria;
 import com.example.recommendation.domain.evaluation.EvaluatedProduct;
+import com.example.recommendation.domain.explanation.CardExplanationPrompt;
 
 @Component
 public class OpenAiExplanationClientImpl implements OpenAiExplanationClient {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(OpenAiExplanationClientImpl.class);
-
-    private final RestTemplate restTemplate;
+    private final RestTemplate restTemplate = new RestTemplate();
     private final String apiKey = System.getenv("OPENAI_API_KEY");
 
-    public OpenAiExplanationClientImpl(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
-
+    /**
+     * 상단 공통 설명 (기존 유지)
+     */
     @Override
     public String generateExplanation(
             List<EvaluatedProduct> products,
             RecommendationCriteria criteria
     ) {
+        return "사용자의 조건을 종합해 추천한 상품들입니다.";
+    }
 
-        String prompt = buildPrompt(products, criteria);
+    /**
+     * 카드별 설명 생성 (Step4)
+     * - Step3 프롬프트 그대로 사용
+     * - OpenAI 실제 호출
+     * - 실패 시 fallback
+     */
+    @Override
+    public Map<Long, String> generateCardExplanations(
+            List<CardExplanationPrompt> prompts,
+            RecommendationCriteria criteria
+    ) {
+
+        String prompt = buildCardExplanationPrompt(prompts, criteria);
 
         try {
-            // Header
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(apiKey);
 
-            HttpEntity<Object> requestEntity =
-                    new HttpEntity<>(
-                            OpenAiRequestFactory.explanationRequest(prompt, apiKey),
-                            headers
-                    );
+            Map<String, Object> body = Map.of(
+                    "model", "gpt-4o-mini",
+                    "temperature", 0.7,
+                    "messages", List.of(
+                            Map.of("role", "system", "content", "너는 쇼핑 추천 카드 설명 생성기다."),
+                            Map.of("role", "user", "content", prompt)
+                    )
+            );
+
+            HttpEntity<Map<String, Object>> request =
+                    new HttpEntity<>(body, headers);
 
             String response =
                     restTemplate.postForObject(
                             "https://api.openai.com/v1/chat/completions",
-                            requestEntity,
+                            request,
                             String.class
                     );
 
-            return OpenAiResponseParser.parseExplanation(response);
+            return OpenAiResponseParser.parseCardExplanationMap(response);
 
         } catch (Exception e) {
-            // 🔥 핵심: 설명 생성 실패는 "치명적 오류"가 아님
-            log.error("OpenAI explanation generation failed", e);
-
-            // ✅ fallback 설명 (UX 유지)
-            return "사용자의 조건에 맞는 상품들을 기준으로 추천한 결과입니다.";
+            // 🔥 실패해도 UX는 유지
+            Map<Long, String> fallback = new HashMap<>();
+            for (CardExplanationPrompt p : prompts) {
+                fallback.put(
+                        p.productId(),
+                        "사용자의 조건과 잘 어울리는 상품입니다."
+                );
+            }
+            return fallback;
         }
     }
 
     /**
-     * Explanation AI 계약 프롬프트
-     * (고도화 전 수정 금지)
+     * 카드 설명용 프롬프트 (Step3 그대로)
      */
-    private String buildPrompt(
-            List<EvaluatedProduct> products,
+    private String buildCardExplanationPrompt(
+            List<CardExplanationPrompt> prompts,
             RecommendationCriteria criteria
     ) {
-        return """
-            너는 상품 추천 결과에 대한 설명 생성기다.
+        StringBuilder sb = new StringBuilder();
 
-            아래 추천 결과와 사용자의 조건을 바탕으로
-            한 문단의 자연스러운 설명 문장만 생성하라.
+        sb.append("""
+        너는 쇼핑 추천 서비스의 카드 설명 생성기다.
 
-            판단, 점수 설명, 정책 언급 금지.
-            추천 이유만 서술하라.
+        각 상품이 왜 사용자에게 어울리는지
+        서로 다른 관점으로 설명해야 한다.
 
-            사용자 조건:
-            %s
+        규칙:
+        - 내부 점수, 순위, 정책 언급 금지
+        - "가성비 최고", "1위 상품" 같은 표현 금지
+        - 사용자 상황을 이해한 것처럼 자연스럽게 말할 것
+        - 카드마다 다른 이유를 제시할 것
+        - 상품당 1~2문장
+        - JSON 형태로만 응답
+        """);
 
-            추천 결과:
-            %s
-            """.formatted(criteria, products);
+        sb.append("\n[사용자 조건]\n");
+        sb.append(criteria.toString()).append("\n");
+
+        sb.append("\n[추천 상품 목록]\n");
+
+        for (CardExplanationPrompt p : prompts) {
+            sb.append("""
+            - 상품 ID: %d
+            - 상품명: %s
+            - 맞은 조건 키워드: %s
+            - 브랜드 선호 반영: %s
+
+            """.formatted(
+                    p.productId(),
+                    p.title(),
+                    p.matchedOptionKeywords(),
+                    p.brandMatched() ? "예" : "아니오"
+            ));
+        }
+
+        sb.append("""
+        응답 형식:
+        {
+          "상품ID": "설명 문장"
+        }
+        """);
+
+        return sb.toString();
     }
 }

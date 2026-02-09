@@ -17,14 +17,19 @@ public class RecommendationResponseDto {
     // 추천 상품 목록 (RECOMMEND 전용)
     private final List<Item> items;
 
+    // 🔥 CONSULT 전용 (없을 수 있음)
+    private final ConsultResponse consult;
+
     private RecommendationResponseDto(
             ResponseType type,
             String message,
-            List<Item> items
+            List<Item> items,
+            ConsultResponse consult
     ) {
         this.type = type;
         this.message = message;
         this.items = items;
+        this.consult = consult;
     }
 
     /* =====================
@@ -58,7 +63,8 @@ public class RecommendationResponseDto {
         return new RecommendationResponseDto(
                 ResponseType.RECOMMEND,
                 explanation,
-                items
+                items,
+                null
         );
     }
 
@@ -67,6 +73,7 @@ public class RecommendationResponseDto {
         return new RecommendationResponseDto(
                 ResponseType.REQUERY,
                 normalizeRequeryMessage(question),
+                null,
                 null
         );
     }
@@ -76,7 +83,20 @@ public class RecommendationResponseDto {
         return new RecommendationResponseDto(
                 ResponseType.INVALID,
                 reason,
+                null,
                 null
+        );
+    }
+
+    // 🔥 CONSULT 전용 응답
+    public static RecommendationResponseDto consult(
+            ConsultResponse consult
+    ) {
+        return new RecommendationResponseDto(
+                ResponseType.CONSULT,
+                consult.getMessage(),
+                null,
+                consult
         );
     }
 
@@ -109,31 +129,22 @@ public class RecommendationResponseDto {
         return items;
     }
 
+    public ConsultResponse getConsult() {
+        return consult;
+    }
+
     /* =====================
        Inner DTO (프론트용)
        ===================== */
 
     public static class Item {
 
-        // 네이버 상품 ID
         private final Long productId;
-
-        // 상품명
         private final String title;
-
-        // 상품 이미지 URL
         private final String imageUrl;
-
-        // 상품 상세 링크
         private final String link;
-
-        // 가격
         private final int price;
-
-        // 쇼핑몰 이름
         private final String mallName;
-
-        // 추천 이유 (AI 생성)
         private final String explanation;
 
         public Item(
@@ -183,11 +194,11 @@ public class RecommendationResponseDto {
         }
     }
 
-
     // 응답 타입 enum
     public enum ResponseType {
         RECOMMEND,
         REQUERY,
+        CONSULT,   // 🔥 신규
         INVALID
     }
 }

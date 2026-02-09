@@ -7,6 +7,9 @@ package com.example.recommendation.dto;
 
 import java.util.List;
 
+import com.example.recommendation.domain.criteria.CommandType;
+import com.example.recommendation.domain.criteria.UserIntentType;
+
 /**
  * OpenAI가 반환한 "조건 구조화 결과"를 그대로 담는 DTO
  * 판단 ❌ / 검증 ❌
@@ -18,14 +21,13 @@ public class AiCriteriaResultDto {
     private Integer priceMax;
     private String preferredBrand;
 
-    public AiCriteriaResultDto() {
-        // JSON 역직렬화용 기본 생성자
-    }
+    // 🔥 의미 확장 필드
+    private UserIntentType intentType;
+    private CommandType commandType;
 
-    // ===== Getter =====
+    public AiCriteriaResultDto() {}
 
     public String getSearchKeyword() {
-    	
         return searchKeyword;
     }
 
@@ -41,7 +43,13 @@ public class AiCriteriaResultDto {
         return preferredBrand;
     }
 
-    // ===== Setter (중요) =====
+    public UserIntentType getIntentType() {
+        return intentType;
+    }
+
+    public CommandType getCommandType() {
+        return commandType;
+    }
 
     public void setSearchKeyword(String searchKeyword) {
         this.searchKeyword = searchKeyword;
@@ -57,5 +65,13 @@ public class AiCriteriaResultDto {
 
     public void setPreferredBrand(String preferredBrand) {
         this.preferredBrand = preferredBrand;
+    }
+
+    public void setIntentType(UserIntentType intentType) {
+        this.intentType = intentType;
+    }
+
+    public void setCommandType(CommandType commandType) {
+        this.commandType = commandType;
     }
 }

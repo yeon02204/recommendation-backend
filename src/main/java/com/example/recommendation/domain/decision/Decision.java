@@ -9,12 +9,11 @@ import com.example.recommendation.domain.explanation.ExplanationPolicy;
  * [원칙]
  * - 문자열 직접 생성 ❌
  * - AI 호출 ❌
- * - Explanation 문장 선택 ❌
+ * - 설명 문장 보유 ❌
  *
  * Decision은
- * - DecisionType (RECOMMEND / REQUERY / INVALID)
- * - 판단 신뢰도
- * - 내부 판단 사유
+ * - DecisionType
+ * - ConfidenceState
  * - ExplanationPolicy
  * 만을 가진다.
  */
@@ -22,22 +21,15 @@ public class Decision {
 
     private final DecisionType type;
     private final ConfidenceState confidence;
-
-    // 내부 판단 이유 (로그/디버깅용)
-    private final String reason;
-
-    // 사용자 노출 문구 정책 (실제 문장은 Explanation 단계에서 결정)
     private final ExplanationPolicy explanationPolicy;
 
     private Decision(
             DecisionType type,
             ConfidenceState confidence,
-            String reason,
             ExplanationPolicy explanationPolicy
     ) {
         this.type = type;
         this.confidence = confidence;
-        this.reason = reason;
         this.explanationPolicy = explanationPolicy;
     }
 
@@ -45,29 +37,36 @@ public class Decision {
      * Factory methods
      * ========================= */
 
-    public static Decision invalid(String reason) {
+    public static Decision invalid() {
         return new Decision(
                 DecisionType.INVALID,
                 ConfidenceState.INSUFFICIENT_DATA,
-                reason,
                 ExplanationPolicy.INVALID_NO_RESULT
         );
     }
 
-    public static Decision requery(String reason, ExplanationPolicy policy) {
+    /** ✅ 기존 메서드 (유지) */
+    public static Decision requery(ExplanationPolicy policy) {
         return new Decision(
                 DecisionType.REQUERY,
                 ConfidenceState.WEAK_SIGNAL,
-                reason,
                 policy
         );
     }
 
-    public static Decision recommend(String reason) {
+    /** ✅ 고도화 단계용 기본 requery (추가) */
+    public static Decision requery() {
+        return new Decision(
+                DecisionType.REQUERY,
+                ConfidenceState.WEAK_SIGNAL,
+                ExplanationPolicy.REQUERY_NEED_MORE_CONDITION
+        );
+    }
+
+    public static Decision recommend() {
         return new Decision(
                 DecisionType.RECOMMEND,
                 ConfidenceState.STRONG_SIGNAL,
-                reason,
                 ExplanationPolicy.RECOMMEND_CONFIDENT
         );
     }
@@ -82,10 +81,6 @@ public class Decision {
 
     public ConfidenceState getConfidence() {
         return confidence;
-    }
-
-    public String getReason() {
-        return reason;
     }
 
     public ExplanationPolicy getExplanationPolicy() {
