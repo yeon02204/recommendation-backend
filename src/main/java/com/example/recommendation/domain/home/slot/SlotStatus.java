@@ -1,5 +1,7 @@
 package com.example.recommendation.domain.home.slot;
 
+// 각 슬롯이 현재 어떤 상태인지 표현하는 상태 enum
+
 public enum SlotStatus {
 	EMPTY,          // 아직 안 물어봄
     ASKED,          // 질문은 했음

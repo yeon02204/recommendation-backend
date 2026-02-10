@@ -7,6 +7,8 @@ import com.example.recommendation.domain.home.slot.DecisionSlot;
 import com.example.recommendation.domain.home.slot.SlotPriorityPolicy;
 import com.example.recommendation.domain.home.state.HomeConversationState;
 
+// DISCOVERY_QUESTION_AI를 호출해 질문을 생성하는 서비스 래퍼
+
 @Service
 public class DiscoveryQuestionService {
 

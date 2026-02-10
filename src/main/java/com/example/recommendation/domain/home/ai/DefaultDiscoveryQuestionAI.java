@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import com.example.recommendation.domain.home.slot.DecisionSlot;
 import com.example.recommendation.domain.home.state.HomeConversationState;
 
+// 슬롯별 고정 질문 템플릿으로 실제 질문 문장을 만드는 기본 구현체
+
 @Service
 public class DefaultDiscoveryQuestionAI
         implements DiscoveryQuestionAI {

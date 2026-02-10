@@ -4,6 +4,8 @@ import org.springframework.stereotype.Component;
 
 import com.example.recommendation.domain.home.state.HomeConversationState;
 
+// 기본 슬롯 우선순위 규칙 구현체
+
 @Component
 public class DefaultSlotPriorityPolicy
         implements SlotPriorityPolicy {

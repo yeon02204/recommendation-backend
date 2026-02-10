@@ -13,6 +13,8 @@ import com.example.recommendation.domain.criteria.RecommendationCriteria;
  * - 검색 ❌
  * - 상태 변경 ❌
  * - 오직 문장 생성 ⭕
+ * 
+ * HOME 단계에서 어떤 AI를 호출할지 조합하는 상위 설명 서비스
  */
 public interface HomeExplanationService {
 

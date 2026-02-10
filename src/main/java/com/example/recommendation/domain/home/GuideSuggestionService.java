@@ -6,6 +6,8 @@ import com.example.recommendation.domain.home.ai.GuideSuggestionAI;
 import com.example.recommendation.domain.home.slot.DecisionSlot;
 import com.example.recommendation.domain.home.state.HomeConversationState;
 
+// GUIDE_SUGGESTION_AI를 호출해 방향 제안을 생성하는 서비스 래퍼
+
 @Service
 public class GuideSuggestionService {
 

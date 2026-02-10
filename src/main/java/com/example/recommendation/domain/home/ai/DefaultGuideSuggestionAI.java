@@ -5,6 +5,8 @@ import org.springframework.stereotype.Component;
 import com.example.recommendation.domain.home.slot.DecisionSlot;
 import com.example.recommendation.domain.home.state.HomeConversationState;
 
+// 일반적인 선택 흐름을 바탕으로 방향 제안 문장을 만드는 기본 구현체
+
 @Component
 public class DefaultGuideSuggestionAI
         implements GuideSuggestionAI {

@@ -4,6 +4,8 @@ import org.springframework.stereotype.Component;
 
 import com.example.recommendation.domain.home.state.HomeConversationState;
 
+// 수집된 조건을 검색 시작 문장으로 요약하는 기본 구현체
+
 @Component
 public class DefaultReadySummaryAI
         implements ReadySummaryAI {

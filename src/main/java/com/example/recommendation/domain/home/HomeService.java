@@ -21,6 +21,8 @@ import com.example.recommendation.dto.RecommendationResponseDto;
  * - 판단 ❌
  * - 검색 ❌
  * - 문장 생성 ❌
+ * 
+ * DecisionResult와 대화 상태를 해석해 HOME 단계 흐름을 조율하는 진입 서비스
  */
 @Service
 public class HomeService {

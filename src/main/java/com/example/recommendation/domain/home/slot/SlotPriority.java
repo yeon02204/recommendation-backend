@@ -2,6 +2,8 @@ package com.example.recommendation.domain.home.slot;
 
 import java.util.List;
 
+// 슬롯 우선순위를 계산하는 규칙 인터페이스
+
 public enum SlotPriority {
 
     DEFAULT(

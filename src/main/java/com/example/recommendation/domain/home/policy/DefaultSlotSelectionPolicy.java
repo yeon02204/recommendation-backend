@@ -6,6 +6,8 @@ import com.example.recommendation.domain.home.slot.DecisionSlot;
 import com.example.recommendation.domain.home.slot.SlotPriority;
 import com.example.recommendation.domain.home.state.HomeConversationState;
 
+// 슬롯 우선순위 정책을 실제 선택 로직에 적용하는 기본 정책 구현체
+
 @Component
 public class DefaultSlotSelectionPolicy
         implements SlotSelectionPolicy {

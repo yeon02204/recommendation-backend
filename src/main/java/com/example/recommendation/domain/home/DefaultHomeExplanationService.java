@@ -11,6 +11,8 @@ import com.example.recommendation.domain.home.prompt.HomeReadySummaryPrompt;
  * HOME 설명 생성 구현체
  *
  * ⚠️ 추천 완료 설명과 절대 섞이지 않는다
+ * 
+ * DISCOVERY / GUIDE / READY 중 어떤 설명 로직을 쓸지 실제로 위임하는 구현체
  */
 @Service
 public class DefaultHomeExplanationService

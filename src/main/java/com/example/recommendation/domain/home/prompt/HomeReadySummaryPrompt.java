@@ -20,6 +20,8 @@ import com.example.recommendation.domain.criteria.RecommendationCriteria;
  * - 상품 추천 ❌
  *
  * → 요약 + 안내 문장만 생성
+ * 
+ * READY_SUMMARY_AI에 전달할 요약용 입력 정보를 프롬프트 텍스트로 변환하는 모델
  */
 public class HomeReadySummaryPrompt {
 

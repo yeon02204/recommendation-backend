@@ -17,6 +17,8 @@ import com.example.recommendation.domain.home.slot.SlotState;
  *
  * ❌ 문장 생성
  * ❌ AI 호출
+ * 
+ * HOME 단계 전체 슬롯 상태를 보관하는 대화 상태 컨테이너
  */
 public class HomeConversationState {
 

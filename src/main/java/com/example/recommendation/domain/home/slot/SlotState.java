@@ -1,5 +1,7 @@
 package com.example.recommendation.domain.home.slot;
 
+// 슬롯 1개의 상태와 값을 함께 관리하는 객체
+
 public class SlotState {
 
     private final DecisionSlot slot;
