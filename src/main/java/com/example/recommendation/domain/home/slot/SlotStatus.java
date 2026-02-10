@@ -8,4 +8,7 @@ public enum SlotStatus {
     USER_UNKNOWN,   // 사용자가 “모르겠어요”
     ANSWERED,       // 답변 받음 (임시)
     CONFIRMED       // 값 확정 (검색에 써도 됨)
+;
+
+	
 }

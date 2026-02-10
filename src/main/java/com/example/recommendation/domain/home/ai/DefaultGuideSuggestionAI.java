@@ -7,27 +7,38 @@ import org.springframework.stereotype.Service;
 
 import com.example.recommendation.domain.home.slot.DecisionSlot;
 import com.example.recommendation.domain.home.state.HomeConversationState;
-// 일반적인 선택 흐름을 바탕으로 방향 제안 문장을 만드는 기본 구현체
 
 @Service
 public class DefaultGuideSuggestionAI
         implements GuideSuggestionAI {
 
-    private static final Map<DecisionSlot, String> GUIDE_MAP =
+    private static final Map<DecisionSlot, String> GUIDE_TEMPLATES =
             new EnumMap<>(DecisionSlot.class);
 
     static {
-        GUIDE_MAP.put(
+        GUIDE_TEMPLATES.put(
                 DecisionSlot.TARGET,
-                "보통 누구를 위한 상품인지부터 정하면 선택이 쉬워져요."
+                "보통 누구를 위한 상품인지부터 정하면 선택이 쉬워져요. 어떤 분께 필요한 걸까요?"
         );
-        GUIDE_MAP.put(
+        GUIDE_TEMPLATES.put(
                 DecisionSlot.PURPOSE,
-                "사용 목적을 기준으로 고르는 경우가 많아요."
+                "사용 목적을 정하면 추천 범위를 많이 줄일 수 있어요. 어떤 용도로 생각 중이세요?"
         );
-        GUIDE_MAP.put(
+        GUIDE_TEMPLATES.put(
+                DecisionSlot.CONSTRAINT,
+                "피하고 싶은 조건이 있으면 먼저 정하는 것도 좋아요."
+        );
+        GUIDE_TEMPLATES.put(
+                DecisionSlot.PREFERENCE,
+                "스타일이나 취향을 기준으로 방향을 잡아볼 수도 있어요."
+        );
+        GUIDE_TEMPLATES.put(
                 DecisionSlot.BUDGET,
-                "예산 범위를 정해두면 선택지가 정리돼요."
+                "대략적인 예산 범위를 정하면 선택이 훨씬 쉬워져요."
+        );
+        GUIDE_TEMPLATES.put(
+                DecisionSlot.CONTEXT,
+                "어떤 상황에서 쓰는지에 따라 추천 방향이 달라질 수 있어요."
         );
     }
 
@@ -36,9 +47,9 @@ public class DefaultGuideSuggestionAI
             DecisionSlot slot,
             HomeConversationState state
     ) {
-        return GUIDE_MAP.getOrDefault(
+        return GUIDE_TEMPLATES.getOrDefault(
                 slot,
-                "보통 많이 고려하는 기준부터 정해볼까요?"
+                "이런 방향으로 한 번 생각해보는 건 어떠세요?"
         );
     }
 }

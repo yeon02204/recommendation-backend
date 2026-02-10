@@ -53,6 +53,7 @@ public class SlotState {
         this.value = value;
     }
 
+    
     /* =========================
      * 편의 메서드
      * ========================= */
@@ -68,4 +69,10 @@ public class SlotState {
     public boolean needsGuide() {
         return this.status == SlotStatus.USER_UNKNOWN;
     }
+    
+    public boolean isAnswered() {
+        return this.status == SlotStatus.ANSWERED
+            || this.status == SlotStatus.CONFIRMED;
+    }
+
 }

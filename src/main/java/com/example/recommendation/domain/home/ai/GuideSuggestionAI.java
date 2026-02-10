@@ -15,7 +15,7 @@ public interface GuideSuggestionAI {
      * 사용자가 모른다고 했을 때
      * 선택 방향을 "방향"으로만 제시한다
      */
-    String generateSuggestion(
+	String generateSuggestion(
             DecisionSlot slot,
             HomeConversationState state
     );

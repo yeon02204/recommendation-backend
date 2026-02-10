@@ -6,7 +6,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.example.recommendation.domain.home.slot.DecisionSlot;
+import com.example.recommendation.domain.home.slot.SlotAnswer;
 import com.example.recommendation.domain.home.slot.SlotState;
+import com.example.recommendation.domain.home.slot.SlotStatus;
 
 
 /**
@@ -88,4 +90,21 @@ public class HomeConversationState {
                 .filter(SlotState::isConfirmed)
                 .collect(Collectors.toList());
     }
+    
+    public void applyAnswer(
+            DecisionSlot slot,
+            SlotAnswer answer
+    ) {
+        SlotState s = slots.get(slot);
+
+        if (answer.getStatus() == SlotStatus.USER_UNKNOWN) {
+            s.markUserUnknown();
+            return;
+        }
+
+        if (answer.getStatus() == SlotStatus.ANSWERED) {
+            s.answer(answer.getValue());
+        }
+    }
+
 }

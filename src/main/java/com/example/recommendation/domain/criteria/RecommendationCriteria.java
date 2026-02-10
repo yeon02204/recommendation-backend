@@ -1,5 +1,6 @@
 package com.example.recommendation.domain.criteria;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,16 +25,33 @@ import java.util.List;
  */
 public class RecommendationCriteria {
 
-    private final String searchKeyword;
-    private final List<String> optionKeywords;
-    private final Integer priceMax;
-    private final String preferredBrand;
+    // 기존 필드들 (mutable로 변경)
+    private String searchKeyword;
+    private List<String> optionKeywords;
+    private Integer priceMax;
+    private String preferredBrand;
 
-    // 🔹 대화 상태 (State)
-    private final UserIntentType intentType;
+    // 대화 상태 (State)
+    private UserIntentType intentType;
 
-    // 🔹 명령 (Command) — 상태가 아님
-    private final CommandType commandType;
+    // 명령 (Command) — 상태가 아님
+    private CommandType commandType;
+
+    // 🔥 HOME 슬롯 병합용 필드
+    private String target;
+    private String purpose;
+    private String context;
+    private List<String> constraints;
+    private List<String> preferences;
+
+    /**
+     * 🔥 기본 생성자 (HOME 병합용)
+     */
+    public RecommendationCriteria() {
+        this.optionKeywords = new ArrayList<>();
+        this.constraints = new ArrayList<>();
+        this.preferences = new ArrayList<>();
+    }
 
     /**
      * ✅ 기존 생성자 (완전 유지)
@@ -96,12 +114,16 @@ public class RecommendationCriteria {
         // optionKeywords는 null이 아닌 "빈 리스트"로 보존
         // EvaluationService는 이 값을 그대로 신뢰한다
         this.optionKeywords =
-                optionKeywords == null ? List.of() : List.copyOf(optionKeywords);
+                optionKeywords == null ? new ArrayList<>() : new ArrayList<>(optionKeywords);
 
         this.priceMax = priceMax;
         this.preferredBrand = preferredBrand;
         this.intentType = intentType;
         this.commandType = commandType;
+        
+        // 새 필드 초기화
+        this.constraints = new ArrayList<>();
+        this.preferences = new ArrayList<>();
     }
 
     // ===== Getter =====
@@ -140,6 +162,95 @@ public class RecommendationCriteria {
         return commandType;
     }
 
+    public String getTarget() {
+        return target;
+    }
+
+    public String getPurpose() {
+        return purpose;
+    }
+
+    public String getContext() {
+        return context;
+    }
+
+    public List<String> getConstraints() {
+        if (constraints == null) {
+            constraints = new ArrayList<>();
+        }
+        return constraints;
+    }
+
+    public List<String> getPreferences() {
+        if (preferences == null) {
+            preferences = new ArrayList<>();
+        }
+        return preferences;
+    }
+
+    // ===== Setter =====
+
+    public void setSearchKeyword(String searchKeyword) {
+        this.searchKeyword = searchKeyword;
+    }
+
+    public void setTarget(String target) {
+        this.target = target;
+    }
+
+    public void setPurpose(String purpose) {
+        this.purpose = purpose;
+    }
+
+    public void setContext(String context) {
+        this.context = context;
+    }
+
+    public void setPriceMax(Integer priceMax) {
+        this.priceMax = priceMax;
+    }
+
+    public void addConstraint(String constraint) {
+        if (constraints == null) {
+            constraints = new ArrayList<>();
+        }
+        constraints.add(constraint);
+    }
+
+    public void addPreference(String preference) {
+        if (preferences == null) {
+            preferences = new ArrayList<>();
+        }
+        preferences.add(preference);
+    }
+
+    // ===== 🔥 Copy 메서드 =====
+
+    public RecommendationCriteria copy() {
+
+        RecommendationCriteria c = new RecommendationCriteria();
+
+        c.setSearchKeyword(this.searchKeyword);
+        c.setTarget(this.target);
+        c.setPurpose(this.purpose);
+        c.setContext(this.context);
+        c.setPriceMax(this.priceMax);
+
+        if (this.optionKeywords != null) {
+            c.getOptionKeywords().addAll(this.optionKeywords);
+        }
+
+        if (this.constraints != null) {
+            c.getConstraints().addAll(this.constraints);
+        }
+
+        if (this.preferences != null) {
+            c.getPreferences().addAll(this.preferences);
+        }
+
+        return c;
+    }
+
     // ===== 🔽 EvaluationService 호환용 파생 메서드 =====
 
     /**
@@ -168,6 +279,11 @@ public class RecommendationCriteria {
                 ", preferredBrand='" + preferredBrand + '\'' +
                 ", intentType=" + intentType +
                 ", commandType=" + commandType +
+                ", target='" + target + '\'' +
+                ", purpose='" + purpose + '\'' +
+                ", context='" + context + '\'' +
+                ", constraints=" + constraints +
+                ", preferences=" + preferences +
                 '}';
     }
 }
