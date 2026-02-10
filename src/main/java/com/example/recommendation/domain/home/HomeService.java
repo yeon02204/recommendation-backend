@@ -8,38 +8,19 @@ import com.example.recommendation.domain.criteria.ConversationPhase;
 import com.example.recommendation.domain.criteria.RecommendationCriteria;
 import com.example.recommendation.domain.decision.DecisionResult;
 import com.example.recommendation.domain.decision.DecisionType;
-import com.example.recommendation.domain.explanation.ExplanationPolicy;
-import com.example.recommendation.domain.explanation.ExplanationService;
 import com.example.recommendation.dto.RecommendationResponseDto;
 
 /**
- * HOME 단계 전용 서비스 (고도화)
+ * HOME 단계 전용 서비스
  *
  * [역할]
- * - DecisionResult를 해석해
- *   "왜 아직 HOME인지"를 설명 문장으로 변환한다
- *
- * [원칙]
- * - 판단 ❌
- * - 검색 ❌
- * - 상태 전이 ❌
- *
- * → DecisionResult의 의미만 해석
- */
-
-/**
- * [HOME 도메인 책임]
- *
- * - 검색 전 대화 공간
- * - 질문 생성
- * - 조건 정제
+ * - DecisionResult를 해석하여
+ *   HOME 단계에서 사용할 HomeReason을 읽어낸다
  *
  * [절대 금지]
- * - SearchService 호출 ❌
- * - 추천 결과 생성 ❌
- *
- * HOME은
- * "다음 대화 문장"만 만든다.
+ * - 판단 ❌
+ * - 검색 ❌
+ * - 문장 생성 ❌
  */
 @Service
 public class HomeService {
@@ -47,9 +28,9 @@ public class HomeService {
     private static final Logger log =
             LoggerFactory.getLogger(HomeService.class);
 
-    private final ExplanationService explanationService;
+    private final HomeExplanationService explanationService;
 
-    public HomeService(ExplanationService explanationService) {
+    public HomeService(HomeExplanationService explanationService) {
         this.explanationService = explanationService;
     }
 
@@ -62,20 +43,22 @@ public class HomeService {
                 decisionResult.getDecision().getType();
         ConversationPhase phase =
                 decisionResult.getNextPhase();
+        HomeReason reason =
+                decisionResult.getHomeReason();
 
         log.info(
-            "[HomeService] decisionType={}, phase={}",
+            "[HomeService] decisionType={}, phase={}, reason={}",
             decisionType,
-            phase
+            phase,
+            reason
         );
 
         /* =========================
          * 1️⃣ 추천 불가
          * ========================= */
         if (decisionType == DecisionType.INVALID) {
-            log.info("[HomeService] INVALID → 종료 메시지");
             return RecommendationResponseDto.invalid(
-                    ExplanationPolicy.INVALID_NO_RESULT.getMessage()
+                    "추천 가능한 상품이 없습니다."
             );
         }
 
@@ -84,37 +67,27 @@ public class HomeService {
          * ========================= */
         if (phase == ConversationPhase.DISCOVERY) {
 
-            if (criteria.getSearchKeyword() == null) {
-                log.info(
-                    "[HomeService] DISCOVERY + no keyword → requery mainKeyword"
-                );
-                return RecommendationResponseDto.requery(
-                        ExplanationPolicy
-                                .REQUERY_MAINKEYWORD_MISSING
-                                .getMessage()
-                );
-            }
+            HomeReason resolved =
+                    reason != null
+                            ? reason
+                            : HomeReason.NEED_MORE_CONDITION;
 
-            log.info(
-                "[HomeService] DISCOVERY + keyword exists → requery more condition"
-            );
-            return RecommendationResponseDto.requery(
-                    ExplanationPolicy
-                            .REQUERY_NEED_MORE_CONDITION
-                            .getMessage()
-            );
+            String message =
+                    explanationService.generateRequery(
+                            resolved,
+                            criteria
+                    );
+
+            return RecommendationResponseDto.requery(message);
         }
 
         /* =========================
-         * 3️⃣ READY 단계 (🔥 핵심 변경)
-         * - 요약 / 방향 문장 책임자: ExplanationService
+         * 3️⃣ READY 단계 (검색 직전 요약)
          * ========================= */
         if (phase == ConversationPhase.READY) {
-            log.info("[HomeService] READY → ExplanationService delegation");
 
             String summary =
                     explanationService.generateReadySummary(
-                            decisionResult,
                             criteria
                     );
 
@@ -124,13 +97,12 @@ public class HomeService {
         /* =========================
          * 4️⃣ 안전망
          * ========================= */
-        log.warn(
-            "[HomeService] unexpected phase reached HOME (fallback)"
-        );
-        return RecommendationResponseDto.requery(
-                ExplanationPolicy
-                        .REQUERY_NEED_MORE_CONDITION
-                        .getMessage()
-        );
+        String fallback =
+                explanationService.generateRequery(
+                        HomeReason.NEED_MORE_CONDITION,
+                        criteria
+                );
+
+        return RecommendationResponseDto.requery(fallback);
     }
 }

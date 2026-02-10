@@ -25,11 +25,7 @@ import com.example.recommendation.external.naver.dto.Product;
  * 이 서비스는
  * "이미 결정된 조건"을 그대로 외부에 전달하는
  * 순수 I/O 계층이다.
- * 
- * 🔥 2025-02-09 업데이트:
- * - searchWithOffset 추가 (RETRY_SEARCH 지원)
  */
-
 @Service
 public class SearchService {
 
@@ -50,16 +46,7 @@ public class SearchService {
     }
 
     /**
-     * 🔥 offset 기반 검색 (RETRY_SEARCH 지원)
-     * 
-     * @param criteria 검색 조건
-     * @param offset 건너뛸 상품 개수 (예: 5, 10, 15...)
-     * @return 검색 결과 상품 리스트
-     * 
-     * 사용 예:
-     * - offset=0: 1~10번째 결과
-     * - offset=5: 6~15번째 결과
-     * - offset=10: 11~20번째 결과
+     * offset 기반 검색 (RETRY_SEARCH 지원)
      */
     public List<Product> searchWithOffset(
             RecommendationCriteria criteria,
@@ -79,26 +66,34 @@ public class SearchService {
             finalQuery = baseQuery;
         }
 
-        // 🔥 offset → start 변환
-        // offset=0 → start=1 (1~30번째)
-        // offset=5 → start=6 (6~35번째)
-        // offset=10 → start=11 (11~40번째)
+        // offset → start 변환
         int start = offset + 1;
 
-        log.info("[SearchService] finalQuery='{}', offset={}, start={}", 
-                 finalQuery, offset, start);
+        log.info(
+            "[SearchService] finalQuery='{}', offset={}, start={}",
+            finalQuery, offset, start
+        );
 
-        // 2️⃣ 네이버 API 호출 (start 파라미터 전달)
+        // 2️⃣ 네이버 API 호출
         List<Product> products = naverClient.search(finalQuery, start);
 
-        log.info("[SearchService] rawResultCount={}",
-                products == null ? 0 : products.size());
+        int rawCount = products == null ? 0 : products.size();
+        log.info("[SearchService] rawResultCount={}", rawCount);
+
+        // 🔥 핵심 추가 로그 (신호만 남김)
+        if (rawCount == 0) {
+            log.info(
+                "[SearchService] EMPTY_RESULT → query='{}', offset={}",
+                finalQuery,
+                offset
+            );
+        }
 
         // 3️⃣ 중복 제거
         List<Product> deduplicated = deduplicate(products);
 
-        log.info("[SearchService] deduplicatedCount={}",
-                deduplicated == null ? 0 : deduplicated.size());
+        int dedupCount = deduplicated == null ? 0 : deduplicated.size();
+        log.info("[SearchService] deduplicatedCount={}", dedupCount);
 
         return deduplicated;
     }

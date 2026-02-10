@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.example.recommendation.domain.criteria.ConversationPhase;
+import com.example.recommendation.domain.home.HomeReason;
 
 /**
  * [역할]
@@ -25,24 +26,28 @@ public class DecisionResult {
     private final Decision decision;
     private final ConversationPhase nextPhase;
     private final boolean allowSearch;
-    private final String reasoning; // 로그/시스템 설명용
+    private final HomeReason homeReason; // 🔥 HOME 전용 사유
+    private final String reasoning;      // 로그/시스템 설명용
 
     private DecisionResult(
             Decision decision,
             ConversationPhase nextPhase,
             boolean allowSearch,
+            HomeReason homeReason,
             String reasoning
     ) {
         this.decision = decision;
         this.nextPhase = nextPhase;
         this.allowSearch = allowSearch;
+        this.homeReason = homeReason;
         this.reasoning = reasoning;
 
         log.info(
-            "[DecisionResult] created decisionType={}, nextPhase={}, allowSearch={}, reasoning={}",
+            "[DecisionResult] created decisionType={}, nextPhase={}, allowSearch={}, homeReason={}, reasoning={}",
             decision.getType(),
             nextPhase,
             allowSearch,
+            homeReason,
             reasoning
         );
     }
@@ -51,32 +56,45 @@ public class DecisionResult {
      * Factory methods
      * ========================= */
 
-    /** 탐색 단계 유지 (HOME) */
-    public static DecisionResult discovery(Decision decision) {
+    /** 🔎 탐색 단계 유지 (HOME) - 사유 포함 */
+    public static DecisionResult discovery(
+            Decision decision,
+            HomeReason homeReason
+    ) {
         return new DecisionResult(
                 decision,
                 ConversationPhase.DISCOVERY,
                 false,
+                homeReason,
                 "INSUFFICIENT_CONTEXT"
         );
     }
 
-    /** 추천 준비 완료 (아직 검색 안 함) */
+    /** 🔎 탐색 단계 유지 (HOME) - 사유 미지정 (기본값) */
+    public static DecisionResult discovery(
+            Decision decision
+    ) {
+        return discovery(decision, null);
+    }
+
+    /** ⏳ 추천 준비 완료 (아직 검색 안 함) */
     public static DecisionResult ready(Decision decision) {
         return new DecisionResult(
                 decision,
                 ConversationPhase.READY,
                 false,
+                null,
                 "ENOUGH_CONTEXT_BUT_SEARCH_NOT_STARTED"
         );
     }
 
-    /** 검색 수행 가능 단계 */
+    /** 🔍 검색 수행 가능 단계 */
     public static DecisionResult searching(Decision decision) {
         return new DecisionResult(
                 decision,
                 ConversationPhase.SEARCHING,
                 true,
+                null,
                 "READY_FOR_SEARCH_EXECUTION"
         );
     }
@@ -95,6 +113,10 @@ public class DecisionResult {
 
     public boolean isAllowSearch() {
         return allowSearch;
+    }
+
+    public HomeReason getHomeReason() {
+        return homeReason;
     }
 
     public String getReasoning() {

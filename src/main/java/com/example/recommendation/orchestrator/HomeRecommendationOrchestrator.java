@@ -14,6 +14,7 @@ import com.example.recommendation.domain.criteria.CriteriaService;
 import com.example.recommendation.domain.criteria.RecommendationCriteria;
 import com.example.recommendation.domain.criteria.SearchReadiness;
 import com.example.recommendation.domain.criteria.SearchReadinessEvaluator;
+import com.example.recommendation.domain.criteria.SearchReadinessResult;
 import com.example.recommendation.domain.decision.Decision;
 import com.example.recommendation.domain.decision.DecisionResult;
 import com.example.recommendation.domain.evaluation.EvaluationResult;
@@ -64,65 +65,102 @@ public class HomeRecommendationOrchestrator {
 
         log.info("[Orchestrator] handle start");
 
+        /* =========================
+         * 1️⃣ 입력 → Criteria
+         * ========================= */
         RecommendationCriteria incoming =
                 criteriaService.createCriteria(request.getUserInput());
 
         CommandType command = incoming.getCommandType();
 
+        /* =========================
+         * 2️⃣ RESET
+         * ========================= */
         if (command == CommandType.RESET) {
+            log.info("[Orchestrator] RESET → context reset");
             contextService.reset();
         }
 
+        /* =========================
+         * 3️⃣ RETRY_SEARCH
+         * ========================= */
         if (command == CommandType.RETRY_SEARCH) {
             return handleRetrySearch();
         }
 
+        /* =========================
+         * 4️⃣ Context merge
+         * ========================= */
         contextService.merge(incoming);
         ConversationContext context = contextService.getContext();
 
-        SearchReadiness readiness =
+        /* =========================
+         * 5️⃣ 검색 준비도 평가
+         * ========================= */
+        SearchReadinessResult readinessResult =
                 searchReadinessEvaluator.evaluate(context, incoming);
 
-        if (readiness == SearchReadiness.NEED_MORE_CONTEXT) {
+        if (readinessResult.readiness() == SearchReadiness.NEED_MORE_CONTEXT) {
+
+            log.info(
+                "[Orchestrator] NEED_MORE_CONTEXT → HOME (reason={})",
+                readinessResult.reason()
+            );
+
             return homeService.handle(
                     DecisionResult.discovery(
-                            Decision.requery(
-                                    com.example.recommendation.domain.explanation
-                                            .ExplanationPolicy
-                                            .REQUERY_NEED_MORE_CONDITION
-                            )
+                            Decision.requery(),
+                            readinessResult.reason()
                     ),
                     incoming
             );
         }
 
+        /* =========================
+         * 6️⃣ 검색용 Criteria 확정
+         * ========================= */
         RecommendationCriteria criteriaForSearch =
                 context.toCriteria();
 
+        /* =========================
+         * 7️⃣ 검색
+         * ========================= */
         List<Product> products =
                 searchService.search(criteriaForSearch);
 
+        /* =========================
+         * 8️⃣ 평가 (합격자 선별)
+         * ========================= */
         EvaluationResult evaluationResult =
                 recommendationService.evaluate(
                         criteriaForSearch,
                         products
                 );
 
+        /* =========================
+         * 9️⃣ 메인 메시지
+         * ========================= */
         String message =
                 assembler.buildMainMessage(
                         evaluationResult,
                         criteriaForSearch
                 );
 
+        /* =========================
+         * 🔟 카드 설명
+         * ========================= */
         Map<Long, String> cardExplanations =
                 assembler.buildCardExplanations(
                         evaluationResult,
                         criteriaForSearch
                 );
 
+        /* =========================
+         * 1️⃣1️⃣ Item 조립 (합격자만)
+         * ========================= */
         List<RecommendationResponseDto.Item> items =
                 assembler.assembleItems(
-                        products,
+                        evaluationResult,
                         cardExplanations
                 );
 
@@ -132,7 +170,12 @@ public class HomeRecommendationOrchestrator {
         );
     }
 
+    /**
+     * 🔁 같은 조건으로 다시 검색
+     */
     private RecommendationResponseDto handleRetrySearch() {
+
+        log.info("[Orchestrator] handleRetrySearch start");
 
         ConversationContext context = contextService.getContext();
         RecommendationCriteria criteria = context.toCriteria();
@@ -161,7 +204,7 @@ public class HomeRecommendationOrchestrator {
 
         List<RecommendationResponseDto.Item> items =
                 assembler.assembleItems(
-                        products,
+                        evaluationResult,
                         cardExplanations
                 );
 
