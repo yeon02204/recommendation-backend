@@ -1,30 +1,41 @@
 package com.example.recommendation.domain.home.policy;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import com.example.recommendation.domain.home.slot.DecisionSlot;
 import com.example.recommendation.domain.home.slot.SlotState;
 import com.example.recommendation.domain.home.slot.SlotStatus;
 import com.example.recommendation.domain.home.state.HomeConversationState;
 
-// 현재 대화 상태를 보고 다음 질문 슬롯을 고르는 기본 구현체
-
-@Service
+@Component
 public class DefaultDiscoverySlotSelector
         implements DiscoverySlotSelector {
 
     @Override
-    public DecisionSlot select(HomeConversationState state) {
+    public DecisionSlot selectNext(HomeConversationState state) {
 
-        for (DecisionSlot slot : DecisionSlot.values()) {
-            SlotState slotState = state.getSlot(slot);
-
-            if (slotState.getStatus() == SlotStatus.EMPTY) {
-                return slot;
+        // 1️⃣ 아직 안 물어본 슬롯
+        for (SlotState slot : state.getAll().values()) {
+            if (slot.getStatus() == SlotStatus.EMPTY) {
+                return slot.getSlot();
             }
         }
 
-        // 전부 물어봤다면 fallback
-        return DecisionSlot.CONTEXT;
+        // 2️⃣ 사용자가 모른다고 한 슬롯
+        for (SlotState slot : state.getAll().values()) {
+            if (slot.getStatus() == SlotStatus.USER_UNKNOWN) {
+                return slot.getSlot();
+            }
+        }
+
+        // 3️⃣ 질문은 했지만 확정 안 된 슬롯
+        for (SlotState slot : state.getAll().values()) {
+            if (slot.getStatus() == SlotStatus.ASKED) {
+                return slot.getSlot();
+            }
+        }
+
+        // 4️⃣ 전부 확정됨 → READY
+        return null;
     }
 }

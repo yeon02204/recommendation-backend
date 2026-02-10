@@ -14,5 +14,9 @@ import com.example.recommendation.domain.home.state.HomeConversationState;
  */
 public interface DiscoverySlotSelector {
 
-    DecisionSlot select(HomeConversationState state);
+	/**
+     * 다음에 질문할 슬롯 1개를 선택한다
+     * 없으면 null 반환 (READY)
+     */
+    DecisionSlot selectNext(HomeConversationState state);
 }

@@ -3,8 +3,8 @@ package com.example.recommendation.domain.home;
 import org.springframework.stereotype.Service;
 
 import com.example.recommendation.domain.home.ai.DiscoveryQuestionAI;
+import com.example.recommendation.domain.home.policy.DiscoverySlotSelector;
 import com.example.recommendation.domain.home.slot.DecisionSlot;
-import com.example.recommendation.domain.home.slot.SlotPriorityPolicy;
 import com.example.recommendation.domain.home.state.HomeConversationState;
 
 // DISCOVERY_QUESTION_AI를 호출해 질문을 생성하는 서비스 래퍼
@@ -12,31 +12,33 @@ import com.example.recommendation.domain.home.state.HomeConversationState;
 @Service
 public class DiscoveryQuestionService {
 
-    private final SlotPriorityPolicy slotPriorityPolicy;
-    private final DiscoveryQuestionAI discoveryQuestionAI;
+    private final DiscoverySlotSelector slotSelector;
+    private final DiscoveryQuestionAI questionAI;
 
     public DiscoveryQuestionService(
-            SlotPriorityPolicy slotPriorityPolicy,
-            DiscoveryQuestionAI discoveryQuestionAI
+            DiscoverySlotSelector slotSelector,
+            DiscoveryQuestionAI questionAI
     ) {
-        this.slotPriorityPolicy = slotPriorityPolicy;
-        this.discoveryQuestionAI = discoveryQuestionAI;
+        this.slotSelector = slotSelector;
+        this.questionAI = questionAI;
     }
 
-    public String generateQuestion(HomeConversationState state) {
+    /**
+     * 다음 질문 1문장을 생성한다
+     * 질문할 슬롯이 없으면 null 반환 (READY)
+     */
+    public String generate(HomeConversationState state) {
 
         DecisionSlot slot =
-                slotPriorityPolicy.nextSlot(state);
+                slotSelector.selectNext(state);
 
         if (slot == null) {
-            return null; // READY로 넘어가야 함
+            return null; // READY 신호
         }
 
+        // 슬롯 상태 변경 (질문했다는 기록)
         state.getSlot(slot).markAsked();
 
-        return discoveryQuestionAI.generateQuestion(
-                slot,
-                state
-        );
+        return questionAI.generateQuestion(slot, state);
     }
 }
