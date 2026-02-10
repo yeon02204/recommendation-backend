@@ -140,9 +140,14 @@ public class HomeService {
             if (questionSlot != null) {
                 log.info("[HomeService] DISCOVERY → QUESTION slot={}", questionSlot);
 
+                // 🔥 STEP 10: 슬롯 ASKED 마킹 + 질문 맥락 추적
                 conversationState
                         .getSlot(questionSlot)
                         .markAsked();
+                
+                conversationState
+                        .getQuestionContext()
+                        .markAsked(questionSlot);
 
                 return RecommendationResponseDto.requery(
                         discoveryQuestionAI.generateQuestion(

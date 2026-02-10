@@ -19,6 +19,8 @@ import com.example.recommendation.domain.decision.Decision;
 import com.example.recommendation.domain.decision.DecisionResult;
 import com.example.recommendation.domain.evaluation.EvaluationResult;
 import com.example.recommendation.domain.home.HomeService;
+import com.example.recommendation.domain.home.answer.UserInputProcessor;
+import com.example.recommendation.domain.home.state.HomeConversationState;
 import com.example.recommendation.domain.recommendation.RecommendationService;
 import com.example.recommendation.domain.search.SearchService;
 import com.example.recommendation.dto.RecommendationRequestDto;
@@ -38,6 +40,8 @@ public class HomeRecommendationOrchestrator {
     private final RecommendationService recommendationService;
     private final HomeService homeService;
     private final RecommendationResponseAssembler assembler;
+    private final UserInputProcessor userInputProcessor;
+    private final HomeConversationState homeConversationState;
 
     public HomeRecommendationOrchestrator(
             CriteriaService criteriaService,
@@ -46,7 +50,9 @@ public class HomeRecommendationOrchestrator {
             SearchService searchService,
             RecommendationService recommendationService,
             HomeService homeService,
-            RecommendationResponseAssembler assembler
+            RecommendationResponseAssembler assembler,
+            UserInputProcessor userInputProcessor,
+            HomeConversationState homeConversationState
     ) {
         this.criteriaService = criteriaService;
         this.contextService = contextService;
@@ -55,6 +61,8 @@ public class HomeRecommendationOrchestrator {
         this.recommendationService = recommendationService;
         this.homeService = homeService;
         this.assembler = assembler;
+        this.userInputProcessor = userInputProcessor;
+        this.homeConversationState = homeConversationState;
     }
 
     public RecommendationResponseDto handle(RecommendationRequestDto request) {
@@ -105,6 +113,12 @@ public class HomeRecommendationOrchestrator {
             log.info(
                 "[Orchestrator] NEED_MORE_CONTEXT → HOME (reason={})",
                 readinessResult.reason()
+            );
+
+            // 🔥 STEP 10: 사용자 입력 → HOME 슬롯 반영
+            userInputProcessor.processUserInput(
+                    request.getUserInput(),
+                    homeConversationState
             );
 
             return homeService.handle(

@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Component;
+
+import com.example.recommendation.domain.home.answer.PendingQuestionContext;
+import com.example.recommendation.domain.home.answer.SlotUpdateCommand;
 import com.example.recommendation.domain.home.slot.DecisionSlot;
 import com.example.recommendation.domain.home.slot.SlotAnswer;
 import com.example.recommendation.domain.home.slot.SlotState;
@@ -15,6 +19,7 @@ import com.example.recommendation.domain.home.slot.SlotStatus;
  * HOME 대화 상태 저장소
  *
  * - 슬롯 상태를 기억한다
+ * - 질문 맥락을 추적한다 (STEP 10)
  * - 다음 행동(DISCOVERY / GUIDE / READY)을 판단한다
  *
  * ❌ 문장 생성
@@ -22,10 +27,15 @@ import com.example.recommendation.domain.home.slot.SlotStatus;
  * 
  * HOME 단계 전체 슬롯 상태를 보관하는 대화 상태 컨테이너
  */
+@Component
 public class HomeConversationState {
 
     private final Map<DecisionSlot, SlotState> slots =
             new EnumMap<>(DecisionSlot.class);
+    
+    // 🔥 STEP 10: 질문 맥락 추적
+    private final PendingQuestionContext questionContext =
+            new PendingQuestionContext();
 
     public HomeConversationState() {
         for (DecisionSlot slot : DecisionSlot.values()) {
@@ -46,7 +56,14 @@ public class HomeConversationState {
     }
 
     public Map<DecisionSlot, SlotState> getAll() {
-        return Map.copyOf(slots); // 🔥 보호
+        return Map.copyOf(slots);
+    }
+    
+    /**
+     * 🔥 STEP 10: 질문 맥락 조회
+     */
+    public PendingQuestionContext getQuestionContext() {
+        return questionContext;
     }
 
     /* =========================
@@ -91,6 +108,38 @@ public class HomeConversationState {
                 .collect(Collectors.toList());
     }
     
+    /**
+     * 🔥 STEP 10: SlotUpdateCommand 적용
+     */
+    public void apply(SlotUpdateCommand command) {
+        
+        SlotState slotState = slots.get(command.getSlot());
+        SlotStatus targetStatus = command.getTargetStatus();
+        Object value = command.getValue();
+        
+        switch (targetStatus) {
+            case ANSWERED -> slotState.answer(value);
+            case USER_UNKNOWN -> slotState.markUserUnknown();
+            case CONFIRMED -> slotState.confirm(value);
+            case ASKED -> slotState.markAsked();
+            default -> {
+                // EMPTY는 무시 (초기 상태)
+            }
+        }
+    }
+    
+    /**
+     * 🔥 STEP 10: 여러 명령 일괄 적용
+     */
+    public void applyAll(List<SlotUpdateCommand> commands) {
+        for (SlotUpdateCommand command : commands) {
+            apply(command);
+        }
+    }
+    
+    /**
+     * 기존 호환 메서드 (유지)
+     */
     public void applyAnswer(
             DecisionSlot slot,
             SlotAnswer answer
