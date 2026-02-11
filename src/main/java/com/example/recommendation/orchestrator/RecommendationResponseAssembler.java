@@ -153,10 +153,10 @@ public class RecommendationResponseAssembler {
                                     p.getProduct().getTitle(),
                                     p.getProduct().getImageUrl(),
                                     p.getProduct().getLink(),
-                                    p.getProduct().getPrice(),
-                                    p.getProduct().getBrand() != null
-                                            ? p.getProduct().getBrand()
-                                            : "기타",
+                                    p.getProduct().getPrice(),        // 🔥 이제 실제 가격
+                                    p.getProduct().getMallName() != null
+                                            ? p.getProduct().getMallName()
+                                            : "기타",                  // 🔥 mallName 사용
                                     explanation
                             );
                         })

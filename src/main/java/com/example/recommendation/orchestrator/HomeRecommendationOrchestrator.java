@@ -25,6 +25,7 @@ import com.example.recommendation.domain.recommendation.RecommendationService;
 import com.example.recommendation.domain.search.SearchService;
 import com.example.recommendation.dto.RecommendationRequestDto;
 import com.example.recommendation.dto.RecommendationResponseDto;
+import com.example.recommendation.dto.RecommendationResponseDto.ResponseType;
 import com.example.recommendation.external.naver.dto.Product;
 
 @Component
@@ -121,29 +122,93 @@ public class HomeRecommendationOrchestrator {
                     homeConversationState
             );
 
-            return homeService.handle(
+            RecommendationResponseDto homeResponse = homeService.handle(
                     DecisionResult.discovery(
                             Decision.requery(),
                             readinessResult.reason()
                     ),
                     incoming
             );
+
+            /* =========================
+             * 🔥 6️⃣ SEARCH_READY 즉시 처리
+             * ========================= */
+            if (homeResponse.getType() == ResponseType.SEARCH_READY) {
+
+                log.info("[Orchestrator] 🚀 SEARCH_READY 수신 → 즉시 검색");
+
+                RecommendationCriteria criteriaForSearch =
+                        homeResponse.getCriteria();
+
+                if (criteriaForSearch == null) {
+                    log.error("[Orchestrator] SEARCH_READY but criteria is null!");
+                    return RecommendationResponseDto.invalid(
+                            "검색 조건이 준비되지 않았습니다."
+                    );
+                }
+
+                // 🔥 검색
+                List<Product> products =
+                        searchService.search(criteriaForSearch);
+
+                // 🔥 평가
+                EvaluationResult evaluationResult =
+                        recommendationService.evaluate(
+                                criteriaForSearch,
+                                products
+                        );
+
+                // 🔥 메인 메시지
+                String message =
+                        assembler.buildMainMessage(
+                                evaluationResult,
+                                criteriaForSearch
+                        );
+
+                // 🔥 카드 설명
+                Map<Long, String> cardExplanations =
+                        assembler.buildCardExplanations(
+                                evaluationResult,
+                                criteriaForSearch
+                        );
+
+                // 🔥 Item 조립
+                List<RecommendationResponseDto.Item> items =
+                        assembler.assembleItems(
+                                evaluationResult,
+                                cardExplanations
+                        );
+
+                log.info(
+                    "[Orchestrator] ✅ 검색 완료 - items={}, message={}",
+                    items.size(),
+                    message
+                );
+
+                return RecommendationResponseDto.recommend(
+                        items,
+                        message
+                );
+            }
+
+            // REQUERY 등 다른 응답 타입은 그대로 반환
+            return homeResponse;
         }
 
         /* =========================
-         * 6️⃣ 검색용 Criteria 확정
+         * 7️⃣ 검색용 Criteria 확정
          * ========================= */
         RecommendationCriteria criteriaForSearch =
                 context.toCriteria();
 
         /* =========================
-         * 7️⃣ 검색
+         * 8️⃣ 검색
          * ========================= */
         List<Product> products =
                 searchService.search(criteriaForSearch);
 
         /* =========================
-         * 8️⃣ 평가 (합격자 선별)
+         * 9️⃣ 평가 (합격자 선별)
          * ========================= */
         EvaluationResult evaluationResult =
                 recommendationService.evaluate(
@@ -152,7 +217,7 @@ public class HomeRecommendationOrchestrator {
                 );
 
         /* =========================
-         * 9️⃣ 메인 메시지
+         * 🔟 메인 메시지
          * ========================= */
         String message =
                 assembler.buildMainMessage(
@@ -161,7 +226,7 @@ public class HomeRecommendationOrchestrator {
                 );
 
         /* =========================
-         * 🔟 카드 설명
+         * 1️⃣1️⃣ 카드 설명
          * ========================= */
         Map<Long, String> cardExplanations =
                 assembler.buildCardExplanations(
@@ -170,7 +235,7 @@ public class HomeRecommendationOrchestrator {
                 );
 
         /* =========================
-         * 1️⃣1️⃣ Item 조립 (합격자만)
+         * 1️⃣2️⃣ Item 조립 (합격자만)
          * ========================= */
         List<RecommendationResponseDto.Item> items =
                 assembler.assembleItems(

@@ -13,6 +13,10 @@ public class NaverItem {
     private String productId;
     private String title;
     private String brand;
+    
+    // 🔥 가격 / 쇼핑몰 정보
+    private String lprice;      // 최저가 (String)
+    private String mallName;    // 쇼핑몰명
 
     // ✅ 프론트/링크용 필드
     private String image;   // 상품 이미지 URL
@@ -60,5 +64,21 @@ public class NaverItem {
 
     public void setLink(String link) {
         this.link = link;
+    }
+
+    public String getLprice() {
+        return lprice;
+    }
+
+    public void setLprice(String lprice) {
+        this.lprice = lprice;
+    }
+
+    public String getMallName() {
+        return mallName;
+    }
+
+    public void setMallName(String mallName) {
+        this.mallName = mallName;
     }
 }

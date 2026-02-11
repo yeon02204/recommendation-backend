@@ -10,6 +10,7 @@ public class RecommendationResponseDto {
     private final String message;
     private final List<Item> items;
     private final ConsultResponse consult;
+    private RecommendationCriteria criteria;  // 🔥 추가: SEARCH_READY용
 
     private RecommendationResponseDto(
             ResponseType type,
@@ -67,20 +68,23 @@ public class RecommendationResponseDto {
     }
 
     /* ===================== */
-    /* 🔥 임시 SEARCH_READY */
+    /* 🔥 SEARCH_READY       */
     /* ===================== */
 
+    /**
+     * 🔥 SEARCH_READY - criteria 전달
+     */
     public static RecommendationResponseDto searchReady(
             RecommendationCriteria criteria
     ) {
-        // 프론트에 criteria를 그대로 전달하지 말고
-        // message에 임시로 넘긴다 (오늘용)
-        return new RecommendationResponseDto(
+        RecommendationResponseDto response = new RecommendationResponseDto(
                 ResponseType.SEARCH_READY,
-                "SEARCH_READY",
+                "검색 준비 완료",
                 null,
                 null
         );
+        response.criteria = criteria;  // criteria 저장
+        return response;
     }
 
     /* ===================== */
@@ -99,6 +103,13 @@ public class RecommendationResponseDto {
 
     public ConsultResponse getConsult() {
         return consult;
+    }
+
+    /**
+     * 🔥 추가: SEARCH_READY용 criteria getter
+     */
+    public RecommendationCriteria getCriteria() {
+        return criteria;
     }
 
     public static class Item {

@@ -63,7 +63,7 @@ public class OpenAiHomeClientImpl implements OpenAiHomeClient {
         HomeQuestionPrompt prompt = new HomeQuestionPrompt(slot, state);
         
         try {
-            String response = callOpenAi(prompt.toPromptText(), 0.3);
+            String response = callOpenAi(prompt.toPromptText(), 0.4);  // 🔥 0.3 → 0.4
             String question = extractTextContent(response);
             
             log.info("[OpenAiHome] generated question: {}", question);
@@ -86,7 +86,7 @@ public class OpenAiHomeClientImpl implements OpenAiHomeClient {
         HomeGuidePrompt prompt = new HomeGuidePrompt(slot, state);
         
         try {
-            String response = callOpenAi(prompt.toPromptText(), 0.7);
+            String response = callOpenAi(prompt.toPromptText(), 0.5);  // 🔥 0.7 → 0.5
             String guide = extractTextContent(response);
             
             log.info("[OpenAiHome] generated guide: {}", guide);
@@ -108,7 +108,7 @@ public class OpenAiHomeClientImpl implements OpenAiHomeClient {
         HomeReadySummaryPrompt prompt = new HomeReadySummaryPrompt(criteria);
         
         try {
-            String response = callOpenAi(prompt.toPromptText(), 0.5);
+            String response = callOpenAi(prompt.toPromptText(), 0.4);  // 🔥 0.5 → 0.4
             String summary = extractTextContent(response);
             
             log.info("[OpenAiHome] generated summary: {}", summary);

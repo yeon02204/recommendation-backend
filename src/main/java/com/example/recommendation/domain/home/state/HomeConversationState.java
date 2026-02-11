@@ -183,5 +183,40 @@ public class HomeConversationState {
         return sb.toString();
     }
 
+    /* =========================
+     * 🔥 READY 판정용 헬퍼 메서드
+     * ========================= */
+
+    /**
+     * 확정된 keyword 존재 여부
+     * PURPOSE 슬롯이 CONFIRMED 상태인지 확인
+     */
+    public boolean hasConfirmedKeyword() {
+        SlotState purpose = getSlot(DecisionSlot.PURPOSE);
+        return purpose.isConfirmed() && purpose.getValue() != null;
+    }
+
+    /**
+     * 확정된 가격 정보 존재 여부
+     * BUDGET 슬롯이 CONFIRMED 또는 ANSWERED 상태인지 확인
+     */
+    public boolean hasConfirmedPrice() {
+        SlotState budget = getSlot(DecisionSlot.BUDGET);
+        return budget.isConfirmed() || budget.getStatus() == SlotStatus.ANSWERED;
+    }
+
+    /**
+     * 확정된 옵션/선호도 존재 여부
+     * PREFERENCE, CONTEXT, TARGET 중 하나라도 CONFIRMED 또는 ANSWERED 상태인지 확인
+     */
+    public boolean hasConfirmedOption() {
+        SlotState preference = getSlot(DecisionSlot.PREFERENCE);
+        SlotState context = getSlot(DecisionSlot.CONTEXT);
+        SlotState target = getSlot(DecisionSlot.TARGET);
+        
+        return (preference.isConfirmed() || preference.getStatus() == SlotStatus.ANSWERED)
+            || (context.isConfirmed() || context.getStatus() == SlotStatus.ANSWERED)
+            || (target.isConfirmed() || target.getStatus() == SlotStatus.ANSWERED);
+    }
 
 }

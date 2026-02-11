@@ -28,6 +28,8 @@ import com.example.recommendation.external.naver.dto.Product;
  */
 @Service
 public class SearchService {
+	
+	
 
     private static final Logger log =
             LoggerFactory.getLogger(SearchService.class);
@@ -133,4 +135,6 @@ public class SearchService {
                 .replaceAll("<[^>]*>", "")
                 .trim();
     }
+    
+    
 }

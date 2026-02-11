@@ -124,7 +124,9 @@ public class RealNaverClient implements NaverClient {
                 stripHtml(item.getTitle()),
                 item.getBrand(),
                 item.getImage(),
-                item.getLink()
+                item.getLink(),
+                item.getLprice(),    // 🔥 추가
+                item.getMallName()   // 🔥 추가
         );
     }
 

@@ -16,6 +16,7 @@ public class Product {
     // 네이버 원본 데이터 (프론트 전달용)
     private final String imageUrl;
     private final String link;
+    private final String mallName;  // 🔥 쇼핑몰명 추가
 
     // 테스트/기존 코드 호환용
     private final int price;
@@ -38,6 +39,7 @@ public class Product {
         // 프론트용 필드는 테스트에서는 없음
         this.imageUrl = null;
         this.link = null;
+        this.mallName = null;  // 🔥 추가
     }
 
     /**
@@ -53,6 +55,7 @@ public class Product {
 
         this.imageUrl = null;
         this.link = null;
+        this.mallName = null;  // 🔥 추가
     }
 
     /**
@@ -64,16 +67,35 @@ public class Product {
             String title,
             String brand,
             String imageUrl,
-            String link
+            String link,
+            String lprice,      // 🔥 추가
+            String mallName     // 🔥 추가
     ) {
         this.id = id;
         this.title = title;
         this.brand = brand;
         this.hasBrand = brand != null && !brand.isBlank();
-        this.price = 0;
+        
+        // 🔥 lprice String → int 변환
+        this.price = parsePrice(lprice);
 
         this.imageUrl = imageUrl;
         this.link = link;
+        this.mallName = mallName;  // 🔥 저장
+    }
+    
+    /**
+     * lprice String → int 변환 (안전 처리)
+     */
+    private int parsePrice(String lprice) {
+        if (lprice == null || lprice.isBlank()) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(lprice);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     public Long getId() {
@@ -104,5 +126,9 @@ public class Product {
 
     public String getLink() {
         return link;
+    }
+
+    public String getMallName() {
+        return mallName;
     }
 }

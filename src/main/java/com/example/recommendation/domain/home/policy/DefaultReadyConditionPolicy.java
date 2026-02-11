@@ -1,66 +1,49 @@
 package com.example.recommendation.domain.home.policy;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.example.recommendation.domain.home.answer.PendingQuestionContext;
-import com.example.recommendation.domain.home.slot.DecisionSlot;
-import com.example.recommendation.domain.home.slot.SlotState;
-import com.example.recommendation.domain.home.slot.SlotStatus;
 import com.example.recommendation.domain.home.state.HomeConversationState;
 
 /**
- * 기본 READY 판정 정책 (고도화 기준)
+ * 🔥 3-4턴 전략 READY 정책
  *
- * READY 조건:
- * - PURPOSE는 반드시 CONFIRMED
- * - TARGET 또는 CONTEXT 중 하나는 ANSWERED 이상
+ * READY 조건 (단순화):
+ * - searchKeyword 존재 (카테고리 확정)
+ * - AND 축 1개 이상 확보:
+ *   - 가격 정보
+ *   - OR 옵션/선호도/컨텍스트
  *
- * + STEP 11
- * - UNKNOWN → GUIDE → UNKNOWN 루프 차단
+ * 슬롯 개수 기준 완전 삭제
  */
 @Component
-public class DefaultReadyConditionPolicy
-        implements ReadyConditionPolicy {
+public class DefaultReadyConditionPolicy implements ReadyConditionPolicy {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(DefaultReadyConditionPolicy.class);
 
     @Override
     public boolean isReady(HomeConversationState state) {
 
-        PendingQuestionContext ctx = state.getQuestionContext();
+        // 🔥 1단계: keyword 확보 여부
+        boolean hasKeyword = state.hasConfirmedKeyword();
 
-     // STEP 11 : GUIDE / UNKNOWN 루프 탈출
-        if (ctx.getLastAskedSlot() != null) {
+        // 🔥 2단계: 축 1개 이상 확보 여부
+        boolean hasPrice = state.hasConfirmedPrice();
+        boolean hasOption = state.hasConfirmedOption();
+        boolean hasAxis = hasPrice || hasOption;
 
-            if (ctx.isLastQuestionAnswered()
-                    && ctx.wasLastAnswerUnknown()
-                    && ctx.recentlyGuided()
-                    && ctx.wasLastGuide(ctx.getLastAskedSlot())) {
+        boolean ready = hasKeyword && hasAxis;
 
-                return true;
-            }
-        }
+        log.info(
+            "[READY Policy] keyword={}, price={}, option={} → READY={}",
+            hasKeyword,
+            hasPrice,
+            hasOption,
+            ready
+        );
 
-
-        /* =========================
-         * 정상 READY 판정
-         * ========================= */
-
-        SlotState purpose = state.getSlot(DecisionSlot.PURPOSE);
-        SlotState target = state.getSlot(DecisionSlot.TARGET);
-        SlotState context = state.getSlot(DecisionSlot.CONTEXT);
-
-        boolean purposeReady =
-                purpose.getStatus() == SlotStatus.CONFIRMED;
-
-        boolean targetOrContextReady =
-                isAnsweredOrConfirmed(target)
-             || isAnsweredOrConfirmed(context);
-
-        return purposeReady && targetOrContextReady;
-    }
-
-    private boolean isAnsweredOrConfirmed(SlotState slot) {
-        SlotStatus status = slot.getStatus();
-        return status == SlotStatus.ANSWERED
-            || status == SlotStatus.CONFIRMED;
+        return ready;
     }
 }

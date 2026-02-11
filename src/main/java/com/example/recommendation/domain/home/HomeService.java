@@ -16,7 +16,8 @@ import com.example.recommendation.domain.home.policy.SlotSelectionPolicy;
 import com.example.recommendation.domain.home.slot.DecisionSlot;
 import com.example.recommendation.domain.home.state.HomeConversationState;
 import com.example.recommendation.dto.RecommendationResponseDto;
-
+import com.example.recommendation.dto.RecommendationResponseDto.ResponseType;
+import java.util.Map;
 @Service
 public class HomeService {
 
@@ -88,8 +89,10 @@ public class HomeService {
             // ANSWERED → CONFIRMED 승격
             slotConfirmationService.promoteAnsweredSlots(conversationState);
 
-            // 🔥 READY 판정
+         // 🔥 READY 판정
             if (readyConditionPolicy.isReady(conversationState)) {
+
+                log.info("[HomeService] ✅ READY 상태 진입");
 
                 RecommendationCriteria merged =
                         criteriaMergeService.merge(criteria, conversationState);
@@ -113,17 +116,14 @@ public class HomeService {
                 }
 
                 log.info(
-                    "[HomeService] READY → RETURN MERGED criteria keyword={}",
+                    "[HomeService] 🚀 READY → 즉시 SEARCH (keyword={})",
                     merged.getSearchKeyword()
                 );
 
-                // 🔥 기존 구조 유지 (REQUERY로 반환)
-                String summary =
-                        explanationService.generateReadySummary(merged);
-
-                return RecommendationResponseDto.requery(summary);
+                // 🔥 요약 없이 바로 SEARCH_READY 반환
+                return RecommendationResponseDto.searchReady(merged);
             }
-
+            
 
             /* ========================= */
             /* GUIDE 처리                */
