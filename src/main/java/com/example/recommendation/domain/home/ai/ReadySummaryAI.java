@@ -1,17 +1,25 @@
 package com.example.recommendation.domain.home.ai;
 
-import com.example.recommendation.domain.home.state.HomeConversationState;
+import com.example.recommendation.domain.home.prompt.HomeReadySummaryPrompt;
 
 /**
- * 검색 직전 요약 전용 AI
+ * READY 요약 생성 AI 인터페이스
  *
- * 역할
- * - 질문 ❌
- * - 상담 ❌
- * - 조건 정리 ⭕
- * - 이제 검색으로 간다는 신호 ⭕
+ * [역할]
+ * - 프롬프트 → 문장 변환만
+ *
+ * [절대 금지]
+ * - READY 판단 ❌
+ * - 슬롯/상태 접근 ❌
+ * - 조건 추가 ❌
  */
 public interface ReadySummaryAI {
-
-    String summarize(HomeConversationState state);
+    
+    /**
+     * READY 요약 생성
+     * 
+     * @param prompt 요약용 프롬프트
+     * @return 요약 문장
+     */
+    String generate(HomeReadySummaryPrompt prompt);
 }

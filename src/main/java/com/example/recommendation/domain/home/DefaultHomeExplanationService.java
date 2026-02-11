@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.example.recommendation.domain.criteria.RecommendationCriteria;
+import com.example.recommendation.domain.home.ai.ReadySummaryAI;
 import com.example.recommendation.domain.home.prompt.HomeReadySummaryPrompt;
 
 /**
@@ -20,6 +21,12 @@ public class DefaultHomeExplanationService
 
     private static final Logger log =
             LoggerFactory.getLogger(DefaultHomeExplanationService.class);
+    
+    private final ReadySummaryAI readySummaryAI;
+    
+    public DefaultHomeExplanationService(ReadySummaryAI readySummaryAI) {
+        this.readySummaryAI = readySummaryAI;
+    }
 
     @Override
     public String generateRequery(
@@ -51,11 +58,10 @@ public class DefaultHomeExplanationService
 
         log.info("[HomeExplanation] generate READY_SUMMARY");
 
+        // 🔥 STEP 12: 프롬프트 생성 → AI 위임
         HomeReadySummaryPrompt prompt =
                 new HomeReadySummaryPrompt(criteria);
-
-        // 🔥 지금은 더미
-        // 다음 단계에서 AI 호출로 교체
-        return "말씀해주신 조건을 바탕으로 상품을 찾아볼게요.";
+        
+        return readySummaryAI.generate(prompt);
     }
 }

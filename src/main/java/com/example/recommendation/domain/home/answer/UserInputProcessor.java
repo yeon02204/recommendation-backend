@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.example.recommendation.domain.home.slot.DecisionSlot;
 import com.example.recommendation.domain.home.state.HomeConversationState;
 
 /**
@@ -13,11 +14,11 @@ import com.example.recommendation.domain.home.state.HomeConversationState;
  *
  * [역할]
  * - 전체 파이프라인 조율
- * - AnswerInterpretationService → SlotBindingPolicy → SlotState
+ * - OpenAiAnswerInterpretationService → SlotBindingPolicy → SlotState
  *
  * [절대 금지]
  * - 판단 ❌ (정책에 위임)
- * - AI 호출 ❌
+ * - AI 호출 ❌ (OpenAiAnswerInterpretationService가 처리)
  */
 @Service
 public class UserInputProcessor {
@@ -25,11 +26,11 @@ public class UserInputProcessor {
     private static final Logger log =
             LoggerFactory.getLogger(UserInputProcessor.class);
     
-    private final AnswerInterpretationService interpretationService;
+    private final OpenAiAnswerInterpretationService interpretationService;
     private final SlotBindingPolicy bindingPolicy;
     
     public UserInputProcessor(
-            AnswerInterpretationService interpretationService,
+            OpenAiAnswerInterpretationService interpretationService,
             SlotBindingPolicy bindingPolicy
     ) {
         this.interpretationService = interpretationService;
@@ -46,17 +47,18 @@ public class UserInputProcessor {
         
         log.info("[UserInputProcessor] input: {}", userInput);
         
-        // 1. 발화 의도 분류
+        // 1. 발화 의도 분류 (AI 기반)
+        PendingQuestionContext questionContext = state.getQuestionContext();
+        DecisionSlot lastAskedSlot = questionContext.getLastAskedSlot();
+        
         AnswerInterpretation interpretation =
-                interpretationService.interpret(userInput);
+                interpretationService.interpret(userInput, lastAskedSlot);
         
         log.info("[UserInputProcessor] intent: {}, value: {}",
                 interpretation.getPrimaryIntent(),
                 interpretation.getNormalizedValue());
         
         // 2. 슬롯 귀속 결정
-        PendingQuestionContext questionContext = state.getQuestionContext();
-        
         List<SlotUpdateCommand> commands =
                 bindingPolicy.decide(interpretation, questionContext, state);
         

@@ -156,4 +156,32 @@ public class HomeConversationState {
         }
     }
 
+    public String describeConfirmedSlots() {
+
+        StringBuilder sb = new StringBuilder();
+
+        for (DecisionSlot slot : DecisionSlot.values()) {
+
+            SlotState slotState = getSlot(slot);
+
+            if (slotState != null
+                    && slotState.isConfirmed()
+                    && slotState.getValue() != null) {
+
+                sb.append("- ")
+                  .append(slot.name())
+                  .append(": ")
+                  .append(slotState.getValue())
+                  .append("\n");
+            }
+        }
+
+        if (sb.length() == 0) {
+            return "없음";
+        }
+
+        return sb.toString();
+    }
+
+
 }

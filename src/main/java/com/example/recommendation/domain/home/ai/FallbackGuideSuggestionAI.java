@@ -3,16 +3,21 @@ package com.example.recommendation.domain.home.ai;
 import java.util.EnumMap;
 import java.util.Map;
 
-import org.springframework.context.annotation.Primary;
+
 import org.springframework.stereotype.Service;
 
 import com.example.recommendation.domain.home.slot.DecisionSlot;
 import com.example.recommendation.domain.home.state.HomeConversationState;
 
-
+/**
+ * Fallback 가이드 제시 구현체
+ * 
+ * [역할]
+ * - OpenAI 실패 시 사용
+ * - 고정 템플릿
+ */
 @Service
-public class DefaultGuideSuggestionAI
-        implements GuideSuggestionAI {
+public class FallbackGuideSuggestionAI implements GuideSuggestionAI {
 
     private static final Map<DecisionSlot, String> GUIDE_TEMPLATES =
             new EnumMap<>(DecisionSlot.class);

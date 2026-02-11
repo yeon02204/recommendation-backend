@@ -22,74 +22,86 @@ import com.example.recommendation.domain.home.state.HomeConversationState;
  */
 @Component
 public class DefaultSlotBindingPolicy implements SlotBindingPolicy {
-    
+
     @Override
     public List<SlotUpdateCommand> decide(
             AnswerInterpretation interpretation,
             PendingQuestionContext questionContext,
             HomeConversationState state
     ) {
-        
+
         List<SlotUpdateCommand> commands = new ArrayList<>();
-        
+
         AnswerIntent intent = interpretation.getPrimaryIntent();
         String value = interpretation.getNormalizedValue();
         DecisionSlot lastAsked = questionContext.getLastAskedSlot();
-        
+
         // 1. NOISE → 무시
         if (intent == AnswerIntent.NOISE) {
             return commands;
         }
-        
-        // 2. CONTEXT_SHIFT → 별도 처리 (여기서는 무시)
+
+        // 2. CONTEXT_SHIFT → 무시
         if (intent == AnswerIntent.CONTEXT_SHIFT) {
             return commands;
         }
-        
-        // 3. REFUSAL → lastAskedSlot을 USER_UNKNOWN으로
+
+        // 3. REFUSAL
         if (intent == AnswerIntent.REFUSAL) {
             if (lastAsked != null) {
                 commands.add(SlotUpdateCommand.unknown(lastAsked));
             }
             return commands;
         }
-        
-        // 4. UNKNOWN → lastAskedSlot을 USER_UNKNOWN으로
+
+        // 4. UNKNOWN
         if (intent == AnswerIntent.UNKNOWN) {
             if (lastAsked != null) {
                 commands.add(SlotUpdateCommand.unknown(lastAsked));
             }
             return commands;
         }
-        
-        // 5. ANSWER → 질문 맥락 우선
+
+        // 5. ANSWER
         if (intent == AnswerIntent.ANSWER) {
-            
-            // 5-1. lastAskedSlot이 있으면 우선 답변
+
             if (lastAsked != null) {
+
+                // 🔥🔥🔥 여기 추가
+                Object existing = state.getSlot(lastAsked).getValue();
+
+                if (existing != null && existing.equals(value)) {
+                    // 이미 같은 값이면 저장 안 함
+                    return commands;
+                }
+
                 commands.add(SlotUpdateCommand.answer(lastAsked, value));
             }
-            
-            // 5-2. SecondarySignals 처리 (명시적 키워드 점프)
+
+            // SecondarySignals
             if (interpretation.hasSecondarySignals()) {
                 for (SecondarySignal signal : interpretation.getSecondarySignals()) {
-                    
+
                     DecisionSlot targetSlot = signal.getTargetSlot();
                     String signalValue = signal.getValue();
-                    
-                    // 이미 처리한 슬롯이면 스킵
+
                     if (targetSlot.equals(lastAsked)) {
                         continue;
                     }
-                    
-                    commands.add(SlotUpdateCommand.answer(
-                            targetSlot,
-                            signalValue
-                    ));
+
+                    Object existing = state.getSlot(targetSlot).getValue();
+
+                    if (existing != null && existing.equals(signalValue)) {
+                        continue;
+                    }
+
+                    commands.add(
+                            SlotUpdateCommand.answer(targetSlot, signalValue)
+                    );
                 }
             }
         }
-        
+
         return commands;
     }
 }

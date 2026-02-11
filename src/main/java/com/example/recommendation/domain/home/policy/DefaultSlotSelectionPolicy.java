@@ -24,6 +24,14 @@ public class DefaultSlotSelectionPolicy
             DecisionSlot.CONTEXT
     );
 
+    private final GuideProtectionPolicy guideProtectionPolicy;
+
+    public DefaultSlotSelectionPolicy(
+            GuideProtectionPolicy guideProtectionPolicy
+    ) {
+        this.guideProtectionPolicy = guideProtectionPolicy;
+    }
+
     @Override
     public DecisionSlot selectNext(HomeConversationState state) {
 
@@ -46,16 +54,23 @@ public class DefaultSlotSelectionPolicy
         // 3️⃣ 더 이상 물을 게 없음
         return null;
     }
+
     @Override
     public DecisionSlot selectGuideTarget(HomeConversationState state) {
 
         for (DecisionSlot slot : PRIORITY) {
             SlotState s = state.getSlot(slot);
+
             if (s.getStatus() == SlotStatus.USER_UNKNOWN) {
+
+                // 🔥 STEP 11: GUIDE 보호 정책 적용
+                if (!guideProtectionPolicy.allowGuide(slot, state)) {
+                    continue;
+                }
+
                 return slot;
             }
         }
         return null;
     }
-
 }
