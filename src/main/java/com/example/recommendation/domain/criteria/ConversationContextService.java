@@ -61,9 +61,11 @@ public class ConversationContextService {
      * 병합 + 결과 반환 (편의 메서드)
      */
     public RecommendationCriteria mergeAndGet(RecommendationCriteria newCriteria) {
+        System.out.println("🔥 현재 context 객체: " + context.hashCode());
         merge(newCriteria);
         return context.toCriteria();
     }
+
 
     /**
      * Context → Criteria 변환
@@ -90,6 +92,8 @@ public class ConversationContextService {
      * 명시적 리셋 (Orchestrator 전용)
      */
     public void reset() {
+        System.out.println("🔥 RESET 호출됨");
         context = new ConversationContext();
     }
+
 }
