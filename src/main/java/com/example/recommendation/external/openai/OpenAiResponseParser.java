@@ -4,8 +4,8 @@ import java.util.Map;
 
 import com.example.recommendation.dto.AiCriteriaResultDto;
 
-import tools.jackson.core.type.TypeReference;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * OpenAI 응답 파싱 전용

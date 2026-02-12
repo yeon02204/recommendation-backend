@@ -15,8 +15,8 @@ import org.springframework.web.client.RestTemplate;
 import com.example.recommendation.domain.home.slot.DecisionSlot;
 import com.example.recommendation.domain.home.state.HomeConversationState;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 @Service

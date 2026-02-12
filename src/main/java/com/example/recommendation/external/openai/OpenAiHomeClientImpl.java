@@ -23,8 +23,8 @@ import com.example.recommendation.domain.home.prompt.HomeReadySummaryPrompt;
 import com.example.recommendation.domain.home.slot.DecisionSlot;
 import com.example.recommendation.domain.home.state.HomeConversationState;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * HOME 단계 AI 호출 구현체
