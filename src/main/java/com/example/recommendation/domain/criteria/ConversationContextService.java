@@ -1,7 +1,7 @@
 package com.example.recommendation.domain.criteria;
 
 import org.springframework.stereotype.Service;
-
+import org.springframework.web.context.annotation.SessionScope;
 /**
  * [역할]
  * - 대화 맥락(Context)을 서버에서 관리
@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
  * → 오직 상태 누적 및 조회만 담당
  */
 @Service
+@SessionScope
 public class ConversationContextService {
 
     // ⚠️ 현재는 단일 사용자 기준
