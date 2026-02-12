@@ -68,6 +68,12 @@ public class HomeReadySummaryPrompt {
         - 내부 판단 과정 설명
         - 질문하지 마
         
+        주의:
+		option이 추상적 효과 표현이면
+		바로 검색 유도하지 말고
+		구체화 질문을 우선하라.
+
+        
         ---
         
         역할:
