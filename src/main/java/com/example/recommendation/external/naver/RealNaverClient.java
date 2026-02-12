@@ -29,7 +29,7 @@ import com.example.recommendation.external.naver.dto.Product;
  * - start 파라미터 지원 (RETRY_SEARCH)
  */
 @Component
-@Profile("prod")
+
 public class RealNaverClient implements NaverClient {
 
     private static final Logger log =
