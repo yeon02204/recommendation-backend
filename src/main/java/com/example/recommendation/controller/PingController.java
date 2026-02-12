@@ -11,9 +11,5 @@ public class PingController {
         return "pong";
     }
     
-    @GetMapping("/")
-    public String root() {
-        return "alive";
-    }
-
+    
 }
