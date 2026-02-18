@@ -2,3 +2,10 @@ logging:
   level:
     com.example.recommendation.external.naver: DEBUG
     org.springframework.web.client: DEBUG
+
+server:
+  servlet:
+    session:
+      cookie:
+        same-site: NONE
+        secure: true
