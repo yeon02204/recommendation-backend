@@ -28,7 +28,6 @@ import com.example.recommendation.domain.recommendation.RecommendationService;
 import com.example.recommendation.domain.search.SearchService;
 import com.example.recommendation.dto.RecommendationRequestDto;
 import com.example.recommendation.dto.RecommendationResponseDto;
-import com.example.recommendation.dto.RecommendationResponseDto.ResponseType;
 import com.example.recommendation.external.naver.dto.Product;
 
 @Component
@@ -46,7 +45,7 @@ public class HomeRecommendationOrchestrator {
     private final RecommendationResponseAssembler assembler;
     private final UserInputProcessor userInputProcessor;
 
-    // 🔥 세션 스코프 객체는 ObjectProvider로 지연 조회
+    // 🔥 세션 스코프 객체는 매 요청마다 조회
     private final ObjectProvider<HomeConversationState> stateProvider;
 
     public HomeRecommendationOrchestrator(
@@ -73,25 +72,34 @@ public class HomeRecommendationOrchestrator {
 
     public RecommendationResponseDto handle(RecommendationRequestDto request) {
 
-        // 🔥 매 요청마다 현재 세션의 HomeConversationState 가져오기
-        HomeConversationState homeConversationState = stateProvider.getObject();
+        // 🔥 현재 세션의 state 가져오기
+        HomeConversationState homeConversationState =
+                stateProvider.getObject();
 
-        System.out.println("🔥 ORCH_STATE_HASH = " + homeConversationState.hashCode());
+        System.out.println("🔥 ORCH_STATE_HASH = "
+                + homeConversationState.hashCode());
 
-        // 🔥 세션ID 로그 확인용
         ServletRequestAttributes attr =
-                (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-        String sessionId = attr.getRequest().getSession().getId();
+                (ServletRequestAttributes)
+                        RequestContextHolder.currentRequestAttributes();
+
+        String sessionId =
+                attr.getRequest().getSession().getId();
+
         System.out.println("🔥 세션ID = " + sessionId);
 
         if (request == null || request.getUserInput() == null) {
-            return RecommendationResponseDto.invalid("요청이 올바르지 않습니다.");
+            return RecommendationResponseDto.invalid(
+                    "요청이 올바르지 않습니다."
+            );
         }
 
         log.info("[Orchestrator] handle start");
 
         RecommendationCriteria incoming =
-                criteriaService.createCriteria(request.getUserInput());
+                criteriaService.createCriteria(
+                        request.getUserInput()
+                );
 
         CommandType command = incoming.getCommandType();
 
@@ -110,64 +118,24 @@ public class HomeRecommendationOrchestrator {
         SearchReadinessResult readinessResult =
                 searchReadinessEvaluator.evaluate(context, incoming);
 
-        if (readinessResult.readiness() == SearchReadiness.NEED_MORE_CONTEXT) {
+        if (readinessResult.readiness()
+                == SearchReadiness.NEED_MORE_CONTEXT) {
 
+            // 🔥 세션 state에 사용자 입력 반영
             userInputProcessor.processUserInput(
                     request.getUserInput(),
                     homeConversationState
             );
 
-            RecommendationResponseDto homeResponse = homeService.handle(
-                    DecisionResult.discovery(
-                            Decision.requery(),
-                            readinessResult.reason()
-                    ),
-                    incoming
-            );
-
-            if (homeResponse.getType() == ResponseType.SEARCH_READY) {
-
-                RecommendationCriteria criteriaForSearch =
-                        homeResponse.getCriteria();
-
-                if (criteriaForSearch == null) {
-                    return RecommendationResponseDto.invalid(
-                            "검색 조건이 준비되지 않았습니다."
+            RecommendationResponseDto homeResponse =
+                    homeService.handle(
+                            DecisionResult.discovery(
+                                    Decision.requery(),
+                                    readinessResult.reason()
+                            ),
+                            incoming,
+                            homeConversationState   // 🔥 반드시 전달
                     );
-                }
-
-                List<Product> products =
-                        searchService.search(criteriaForSearch);
-
-                EvaluationResult evaluationResult =
-                        recommendationService.evaluate(
-                                criteriaForSearch,
-                                products
-                        );
-
-                String message =
-                        assembler.buildMainMessage(
-                                evaluationResult,
-                                criteriaForSearch
-                        );
-
-                Map<Long, String> cardExplanations =
-                        assembler.buildCardExplanations(
-                                evaluationResult,
-                                criteriaForSearch
-                        );
-
-                List<RecommendationResponseDto.Item> items =
-                        assembler.assembleItems(
-                                evaluationResult,
-                                cardExplanations
-                        );
-
-                return RecommendationResponseDto.recommend(
-                        items,
-                        message
-                );
-            }
 
             return homeResponse;
         }
@@ -210,8 +178,11 @@ public class HomeRecommendationOrchestrator {
 
     private RecommendationResponseDto handleRetrySearch() {
 
-        ConversationContext context = contextService.getContext();
-        RecommendationCriteria criteria = context.toCriteria();
+        ConversationContext context =
+                contextService.getContext();
+
+        RecommendationCriteria criteria =
+                context.toCriteria();
 
         int offset = context.getRetryCount() * 5;
 
