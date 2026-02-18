@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -44,7 +45,9 @@ public class HomeRecommendationOrchestrator {
     private final HomeService homeService;
     private final RecommendationResponseAssembler assembler;
     private final UserInputProcessor userInputProcessor;
-    private final HomeConversationState homeConversationState;
+
+    // 🔥 세션 스코프 객체는 ObjectProvider로 지연 조회
+    private final ObjectProvider<HomeConversationState> stateProvider;
 
     public HomeRecommendationOrchestrator(
             CriteriaService criteriaService,
@@ -55,7 +58,7 @@ public class HomeRecommendationOrchestrator {
             HomeService homeService,
             RecommendationResponseAssembler assembler,
             UserInputProcessor userInputProcessor,
-            HomeConversationState homeConversationState
+            ObjectProvider<HomeConversationState> stateProvider
     ) {
         this.criteriaService = criteriaService;
         this.contextService = contextService;
@@ -65,14 +68,17 @@ public class HomeRecommendationOrchestrator {
         this.homeService = homeService;
         this.assembler = assembler;
         this.userInputProcessor = userInputProcessor;
-        this.homeConversationState = homeConversationState;
+        this.stateProvider = stateProvider;
     }
 
     public RecommendationResponseDto handle(RecommendationRequestDto request) {
 
-    	System.out.println("🔥 ORCH_STATE_HASH = " + homeConversationState.hashCode());
+        // 🔥 매 요청마다 현재 세션의 HomeConversationState 가져오기
+        HomeConversationState homeConversationState = stateProvider.getObject();
 
-        // 🔥 세션ID 로그 확인용 (구조 변경 아님)
+        System.out.println("🔥 ORCH_STATE_HASH = " + homeConversationState.hashCode());
+
+        // 🔥 세션ID 로그 확인용
         ServletRequestAttributes attr =
                 (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
         String sessionId = attr.getRequest().getSession().getId();
