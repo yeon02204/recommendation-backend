@@ -45,6 +45,8 @@ public class UserInputProcessor {
             HomeConversationState state
     ) {
         
+    	System.out.println("UIP_STATE_HASH=" + state.hashCode());
+
         log.info("[UserInputProcessor] input: {}", userInput);
 
         // 🔥 세션 상태 객체 해시 확인

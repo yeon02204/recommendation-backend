@@ -65,6 +65,8 @@ public class HomeService {
         ConversationPhase phase = decisionResult.getNextPhase();
         HomeReason reason = decisionResult.getHomeReason();
 
+        System.out.println("HOME_STATE_HASH=" + conversationState.hashCode());
+
         log.info(
             "[HomeService] decisionType={}, phase={}, reason={}",
             decisionType,
