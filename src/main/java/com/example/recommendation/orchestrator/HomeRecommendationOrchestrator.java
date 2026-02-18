@@ -70,6 +70,8 @@ public class HomeRecommendationOrchestrator {
 
     public RecommendationResponseDto handle(RecommendationRequestDto request) {
 
+    	System.out.println("🔥 ORCH_STATE_HASH = " + homeConversationState.hashCode());
+
         // 🔥 세션ID 로그 확인용 (구조 변경 아님)
         ServletRequestAttributes attr =
                 (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();

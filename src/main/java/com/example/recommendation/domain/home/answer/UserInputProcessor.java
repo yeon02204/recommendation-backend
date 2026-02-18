@@ -46,10 +46,16 @@ public class UserInputProcessor {
     ) {
         
         log.info("[UserInputProcessor] input: {}", userInput);
+
+        // 🔥 세션 상태 객체 해시 확인
+        log.info("🔥 STATE_HASH (UserInputProcessor) = {}", state.hashCode());
         
         // 1. 발화 의도 분류 (AI 기반)
         PendingQuestionContext questionContext = state.getQuestionContext();
         DecisionSlot lastAskedSlot = questionContext.getLastAskedSlot();
+
+        // 🔥 마지막 질문 슬롯 확인
+        log.info("🔥 LAST_ASKED_SLOT = {}", lastAskedSlot);
         
         AnswerInterpretation interpretation =
                 interpretationService.interpret(userInput, lastAskedSlot);
@@ -63,6 +69,9 @@ public class UserInputProcessor {
                 bindingPolicy.decide(interpretation, questionContext, state);
         
         log.info("[UserInputProcessor] commands: {}", commands.size());
+
+        // 🔥 명령 상세 확인
+        log.info("🔥 COMMAND_LIST = {}", commands);
         
         // 3. 명령 실행
         state.applyAll(commands);

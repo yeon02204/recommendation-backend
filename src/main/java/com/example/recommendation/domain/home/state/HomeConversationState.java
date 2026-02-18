@@ -41,6 +41,7 @@ public class HomeConversationState {
             new PendingQuestionContext();
 
     public HomeConversationState() {
+    	System.out.println("🔥 NEW HomeConversationState CREATED = " + this.hashCode());
         for (DecisionSlot slot : DecisionSlot.values()) {
             slots.put(slot, new SlotState(slot));
         }
