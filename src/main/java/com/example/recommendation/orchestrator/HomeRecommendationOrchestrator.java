@@ -6,6 +6,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.example.recommendation.domain.criteria.CommandType;
 import com.example.recommendation.domain.criteria.ConversationContext;
@@ -68,55 +70,40 @@ public class HomeRecommendationOrchestrator {
 
     public RecommendationResponseDto handle(RecommendationRequestDto request) {
 
+        // 🔥 세션ID 로그 확인용 (구조 변경 아님)
+        ServletRequestAttributes attr =
+                (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+        String sessionId = attr.getRequest().getSession().getId();
+        System.out.println("🔥 세션ID = " + sessionId);
+
         if (request == null || request.getUserInput() == null) {
             return RecommendationResponseDto.invalid("요청이 올바르지 않습니다.");
         }
 
         log.info("[Orchestrator] handle start");
 
-        /* =========================
-         * 1️⃣ 입력 → Criteria
-         * ========================= */
         RecommendationCriteria incoming =
                 criteriaService.createCriteria(request.getUserInput());
 
         CommandType command = incoming.getCommandType();
 
-        /* =========================
-         * 2️⃣ RESET
-         * ========================= */
         if (command == CommandType.RESET) {
             log.info("[Orchestrator] RESET → context reset");
             contextService.reset();
         }
 
-        /* =========================
-         * 3️⃣ RETRY_SEARCH
-         * ========================= */
         if (command == CommandType.RETRY_SEARCH) {
             return handleRetrySearch();
         }
 
-        /* =========================
-         * 4️⃣ Context merge
-         * ========================= */
         contextService.merge(incoming);
         ConversationContext context = contextService.getContext();
 
-        /* =========================
-         * 5️⃣ 검색 준비도 평가
-         * ========================= */
         SearchReadinessResult readinessResult =
                 searchReadinessEvaluator.evaluate(context, incoming);
 
         if (readinessResult.readiness() == SearchReadiness.NEED_MORE_CONTEXT) {
 
-            log.info(
-                "[Orchestrator] NEED_MORE_CONTEXT → HOME (reason={})",
-                readinessResult.reason()
-            );
-
-            // 🔥 STEP 10: 사용자 입력 → HOME 슬롯 반영
             userInputProcessor.processUserInput(
                     request.getUserInput(),
                     homeConversationState
@@ -130,60 +117,43 @@ public class HomeRecommendationOrchestrator {
                     incoming
             );
 
-            /* =========================
-             * 🔥 6️⃣ SEARCH_READY 즉시 처리
-             * ========================= */
             if (homeResponse.getType() == ResponseType.SEARCH_READY) {
-
-                log.info("[Orchestrator] 🚀 SEARCH_READY 수신 → 즉시 검색");
 
                 RecommendationCriteria criteriaForSearch =
                         homeResponse.getCriteria();
 
                 if (criteriaForSearch == null) {
-                    log.error("[Orchestrator] SEARCH_READY but criteria is null!");
                     return RecommendationResponseDto.invalid(
                             "검색 조건이 준비되지 않았습니다."
                     );
                 }
 
-                // 🔥 검색
                 List<Product> products =
                         searchService.search(criteriaForSearch);
 
-                // 🔥 평가
                 EvaluationResult evaluationResult =
                         recommendationService.evaluate(
                                 criteriaForSearch,
                                 products
                         );
 
-                // 🔥 메인 메시지
                 String message =
                         assembler.buildMainMessage(
                                 evaluationResult,
                                 criteriaForSearch
                         );
 
-                // 🔥 카드 설명
                 Map<Long, String> cardExplanations =
                         assembler.buildCardExplanations(
                                 evaluationResult,
                                 criteriaForSearch
                         );
 
-                // 🔥 Item 조립
                 List<RecommendationResponseDto.Item> items =
                         assembler.assembleItems(
                                 evaluationResult,
                                 cardExplanations
                         );
-
-                log.info(
-                    "[Orchestrator] ✅ 검색 완료 - items={}, message={}",
-                    items.size(),
-                    message
-                );
 
                 return RecommendationResponseDto.recommend(
                         items,
@@ -191,52 +161,33 @@ public class HomeRecommendationOrchestrator {
                 );
             }
 
-            // REQUERY 등 다른 응답 타입은 그대로 반환
             return homeResponse;
         }
 
-        /* =========================
-         * 7️⃣ 검색용 Criteria 확정
-         * ========================= */
         RecommendationCriteria criteriaForSearch =
                 context.toCriteria();
 
-        /* =========================
-         * 8️⃣ 검색
-         * ========================= */
         List<Product> products =
                 searchService.search(criteriaForSearch);
 
-        /* =========================
-         * 9️⃣ 평가 (합격자 선별)
-         * ========================= */
         EvaluationResult evaluationResult =
                 recommendationService.evaluate(
                         criteriaForSearch,
                         products
                 );
 
-        /* =========================
-         * 🔟 메인 메시지
-         * ========================= */
         String message =
                 assembler.buildMainMessage(
                         evaluationResult,
                         criteriaForSearch
                 );
 
-        /* =========================
-         * 1️⃣1️⃣ 카드 설명
-         * ========================= */
         Map<Long, String> cardExplanations =
                 assembler.buildCardExplanations(
                         evaluationResult,
                         criteriaForSearch
                 );
 
-        /* =========================
-         * 1️⃣2️⃣ Item 조립 (합격자만)
-         * ========================= */
         List<RecommendationResponseDto.Item> items =
                 assembler.assembleItems(
                         evaluationResult,
@@ -249,12 +200,7 @@ public class HomeRecommendationOrchestrator {
         );
     }
 
-    /**
-     * 🔁 같은 조건으로 다시 검색
-     */
     private RecommendationResponseDto handleRetrySearch() {
-
-        log.info("[Orchestrator] handleRetrySearch start");
 
         ConversationContext context = contextService.getContext();
         RecommendationCriteria criteria = context.toCriteria();
