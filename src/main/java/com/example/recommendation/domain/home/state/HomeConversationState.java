@@ -119,7 +119,10 @@ public class HomeConversationState {
         SlotState slotState = slots.get(command.getSlot());
         SlotStatus targetStatus = command.getTargetStatus();
         Object value = command.getValue();
-        
+
+        // 🔥 디버그 로그 (세션 분리 확인용)
+        System.out.println("STATE_HASH=" + this.hashCode());
+
         switch (targetStatus) {
             case ANSWERED -> slotState.answer(value);
             case USER_UNKNOWN -> slotState.markUserUnknown();
