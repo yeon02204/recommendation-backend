@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 쇼핑 매니저 - 꼬강</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=Jua&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 다크모드 토글 버튼 (전역) -->
+    <button class="theme-toggle" id="themeToggle" aria-label="다크모드 토글">
+        <span class="sun-icon">🕶️</span>
+        <span class="moon-icon">👓</span>
+    </button>
+
+    <!-- 파티 모드 토글 버튼 (이스터에그) -->
+    <button class="party-toggle" id="partyToggle" aria-label="파티 모드">
+        <span class="party-icon">🎧</span>
+    </button>
+
+    <!-- 파티 모드 활성화 플래시 -->
+    <div class="party-flash" id="partyFlash">
+        <div class="party-flash-text">PARTY MODE ACTIVATED</div>
+    </div>
+
+    <!-- ========== 랜딩 페이지 ========== -->
+    <div class="view" id="landingView">
+        <!-- Hero 섹션 -->
+        <section class="hero-section">
+            <div class="hero-content">
+                <div class="hero-image-wrapper">
+                    <img src="search.png" alt="AI 쇼핑 에이전트" class="hero-image">
+                </div>
+                <h1 class="hero-title">AI 쇼핑 매니저 : 꼬강</h1>
+                <p class="hero-subtitle">편하게 대화하며 상품을 추천받으세요</p>
+                <button class="cta-button" id="startButton">
+                    시작하기
+                    <span class="cta-arrow">→</span>
+                </button>
+            </div>
+            <div class="scroll-indicator">
+                <span>스크롤하여 더 알아보기</span>
+                <div class="scroll-arrow">↓</div>
+            </div>
+        </section>
+
+        <!-- 소개 섹션 1: 우리 챗봇이 뭐하는 건지 -->
+        <section class="intro-section">
+            <div class="section-container">
+                <h2 class="section-title fade-in">우리 챗봇은 무엇을 하나요?</h2>
+                <div class="features-grid">
+                    <div class="feature-card fade-in" style="animation-delay: 0.1s">
+                        <div class="feature-icon">🗣️</div>
+                        <h3>자연어 이해</h3>
+                        <p>복잡한 검색어 대신 편하게 대화 하듯이 요청하세요</p>
+                    </div>
+                    <div class="feature-card fade-in" style="animation-delay: 0.2s">
+                        <div class="feature-icon">🔍</div>
+                        <h3>조건 기반 필터링</h3>
+                        <p>가격, 카테고리, 특성을 자동으로 분석해요</p>
+                    </div>
+                    <div class="feature-card fade-in" style="animation-delay: 0.3s">
+                        <div class="feature-icon">💬</div>
+                        <h3>맥락 유지</h3>
+                        <p>대화를 이어가며 조건을 정교하게 만들어요</p>
+                    </div>
+                    <div class="feature-card fade-in" style="animation-delay: 0.4s">
+                        <div class="feature-icon">✨</div>
+                        <h3>추천 이유 설명</h3>
+                        <p>왜 이 상품을 추천하는지 명확히 알려드려요</p>
+                    </div>
+                </div>
+
+                <!-- 실제 채팅 UI 목업 -->
+                <div class="chat-mockup fade-in" style="animation-delay: 0.5s">
+                    <div class="mockup-header">
+                        <div class="mockup-dots">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <span>쇼핑 도우미</span>
+                    </div>
+                    <div class="mockup-messages">
+                        <div class="mockup-message bot">
+                            <img src="dog-normal.png" alt="봇" class="mockup-avatar">
+                            <div class="mockup-bubble">안녕! 뭘 찾아드릴까요?</div>
+                        </div>
+                        <div class="mockup-message user">
+                            <div class="mockup-bubble">5만원 이하 무선 이어폰 추천해줘</div>
+                        </div>
+                        <div class="mockup-message bot">
+                            <img src="dog-success.png" alt="봇" class="mockup-avatar">
+                            <div class="mockup-bubble">좋아! 이 상품들 어때? 🎧</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 소개 섹션 2: 사용 예시 -->
+        <section class="examples-section">
+            <div class="section-container">
+                <div class="examples-content">
+                    <div class="examples-text fade-in">
+                        <img src="choose.png" alt="선택하기" class="examples-image">
+                        <h2 class="section-title">이렇게 시작해보세요!</h2>
+                        <p class="section-description">아래 예시를 클릭하면 바로 추천을 받을 수 있어요</p>
+                    </div>
+                    <div class="examples-buttons">
+                        <button class="example-button fade-in" data-query="2달치 분량으로 피로회복에 좋은 비타민 찾아줘" style="animation-delay: 0.1s">
+                            <span class="example-icon">💊</span>
+                            <span class="example-text">2달치 분량으로 피로회복에 좋은 비타민 찾아줘</span>
+                        </button>
+                        <button class="example-button fade-in" data-query="30만원 이하 무선 청소기 추천해줘" style="animation-delay: 0.2s">
+                            <span class="example-icon">🧹</span>
+                            <span class="example-text">30만원 이하 무선 청소기 추천해줘</span>
+                        </button>
+                        <button class="example-button fade-in" data-query="신생아 키우는 집에 쓸 가습기 추천해줘" style="animation-delay: 0.3s">
+                            <span class="example-icon">💧</span>
+                            <span class="example-text">신생아 키우는 집에 쓸 가습기 추천해줘</span>
+                        </button>
+                        <button class="example-button fade-in" data-query="허리랑 어깨 맨날 뻐근한 40대 남자용 마사지건 추천해줘" style="animation-delay: 0.4s">
+                            <span class="example-icon">💆</span>
+                            <span class="example-text">허리랑 어깨 맨날 뻐근한 40대 남자용 마사지건 추천해줘</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 소개 섹션 3: 깊은 대화 가능 -->
+        <section class="conversation-section">
+            <div class="section-container">
+                <div class="conversation-content">
+                    <div class="conversation-image fade-in">
+                        <img src="fix.png" alt="상품 찾기" class="section-image">
+                    </div>
+                    <div class="conversation-text">
+                        <h2 class="section-title fade-in">깊은 대화로 정확한 추천</h2>
+                        <div class="conversation-cards">
+                            <div class="conv-card fade-in" style="animation-delay: 0.1s">
+                                <div class="conv-card-icon">🔍</div>
+                                <h3>단순 검색이 아닌 대화</h3>
+                                <p>키워드 나열이 아닌 자연스러운 대화로 원하는 상품을 찾아요</p>
+                            </div>
+                            <div class="conv-card fade-in" style="animation-delay: 0.2s">
+                                <div class="conv-card-icon">✨</div>
+                                <h3>조건을 점점 정교하게</h3>
+                                <p>대화를 나누며 가격, 브랜드, 특성 등을 구체화해요</p>
+                            </div>
+                            <div class="conv-card fade-in" style="animation-delay: 0.3s">
+                                <div class="conv-card-icon">🛍️</div>
+                                <h3>실제 네이버 쇼핑 연동</h3>
+                                <p>네이버 쇼핑 API를 통해 실시간 상품 정보를 가져와요</p>
+                            </div>
+                            <div class="conv-card fade-in" style="animation-delay: 0.4s">
+                                <div class="conv-card-icon">💬</div>
+                                <h3>추천 이유 자동 생성</h3>
+                                <p>왜 이 상품을 추천하는지 AI가 설명해드려요</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 소개 섹션 4: 결과 시각화 -->
+        <section class="visualization-section">
+            <div class="section-container">
+                <div class="visualization-content">
+                    <div class="visualization-text">
+                        <img src="like.png" alt="추천 결과" class="section-image-small fade-in">
+                        <h2 class="section-title fade-in">한눈에 보는 추천 결과</h2>
+                        <div class="visualization-features">
+                            <div class="viz-feature fade-in" style="animation-delay: 0.1s">
+                                <span class="viz-check">✓</span>
+                                <span>카드 덱 형식으로 깔끔하게</span>
+                            </div>
+                            <div class="viz-feature fade-in" style="animation-delay: 0.2s">
+                                <span class="viz-check">✓</span>
+                                <span>추천 이유를 함께 표시</span>
+                            </div>
+                            <div class="viz-feature fade-in" style="animation-delay: 0.3s">
+                                <span class="viz-check">✓</span>
+                                <span>실제 제품 링크 바로 연결</span>
+                            </div>
+                            <div class="viz-feature fade-in" style="animation-delay: 0.4s">
+                                <span class="viz-check">✓</span>
+                                <span>가격, 쇼핑몰 정보 포함</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="visualization-preview fade-in" style="animation-delay: 0.5s">
+                        <div class="preview-card">
+                            <div class="preview-image"></div>
+                            <div class="preview-info">
+                                <div class="preview-title">상품 이름</div>
+                                <div class="preview-price">00,000원</div>
+                                <div class="preview-mall">쇼핑몰</div>
+                            </div>
+                            <div class="preview-reason">
+                                <div class="preview-reason-label">추천 이유</div>
+                                <div class="preview-reason-text">조건에 딱 맞는 상품이에요!</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="landing-footer">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <button class="footer-link" id="openInfoPage">개발자 정보</button>
+                    <span class="footer-divider">|</span>
+                    <button class="footer-link" id="openGuidePage">사용 가이드</button>
+                </div>
+                <p class="footer-copyright">© 2026 AI Shopping Manager Cogang. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ========== 챗봇 앱 페이지 (기존 구조 유지) ========== -->
+    <div class="view" id="appView" style="display: none;">
+        <div class="app-container">
+            <!-- 왼쪽: 채팅 영역 -->
+            <div class="chat-section">
+                <!-- 헤더 -->
+                <div class="chat-header">
+                    <button class="back-button" id="backToLanding">←</button>
+                    <div class="header-title">쇼핑 매니저 꼬강</div>
+                    <div class="header-buttons">
+                        <button class="guide-button" id="guideButtonHeader" title="사용 가이드">?</button>
+                        <button class="menu-button" id="menuButton" title="메뉴">⋮</button>
+                    </div>
+                    
+                    <!-- 메뉴 드롭다운 -->
+                    <div class="menu-dropdown" id="menuDropdown">
+                        <button class="menu-item" id="menuRefresh">새로고침</button>
+                        <button class="menu-item" id="menuInfo">개발자 정보</button>
+                        <button class="menu-item" id="menuGuide">사용 가이드</button>
+                        <button class="menu-item" id="menuHome">홈으로</button>
+                    </div>
+                </div>
+
+                <!-- 채팅 메시지 영역 -->
+                <div class="messages-container" id="messagesContainer">
+                    <!-- 초기 봇 메시지 -->
+                    <div class="message bot-message">
+                        <img src="dog-normal.png" alt="봇" class="bot-avatar">
+                        <div class="message-bubble">
+                            안녕! 어떤 상품을 추천해줄까?
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 입력 영역 -->
+                <div class="input-area">
+                    <input 
+                        type="text" 
+                        id="userInput" 
+                        placeholder="찾고 싶은 상품을 말해주세요..."
+                        autocomplete="off"
+                    >
+                    <button id="sendButton">전송</button>
+                </div>
+            </div>
+
+            <!-- 오른쪽: 카드 덱 영역 -->
+            <div class="cards-section">
+                <div class="cards-header">
+                    <h2>추천 상품 <span id="cardCount"></span></h2>
+                </div>
+
+                <!-- 카드 덱 컨테이너 -->
+                <div class="cards-deck-container" id="cardsDeckContainer">
+                    <div class="no-cards-message">
+                        상품을 검색하면 여기에 추천 카드가 나타나요!
+                    </div>
+                </div>
+
+                <!-- 카드 네비게이션 -->
+                <div class="cards-navigation" id="cardsNavigation" style="display: none;">
+                    <button class="nav-button prev-button" id="prevButton">←</button>
+                    <div class="card-indicators" id="cardIndicators"></div>
+                    <button class="nav-button next-button" id="nextButton">→</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 개발자 정보 페이지 ========== -->
+    <div class="view" id="infoView" style="display: none;">
+        <div class="info-container">
+            <header class="info-header">
+                <button class="back-button" id="backFromInfo">←</button>
+                <h1>개발자 정보</h1>
+            </header>
+
+            <div class="info-content">
+                <!-- 프로젝트 개요 -->
+                <section class="info-section fade-in">
+                    <h2 class="info-section-title">🎯 프로젝트 개요</h2>
+                    <div class="info-box editable">
+                        <p class="placeholder-text">- AI 기반 조건 해석형 상품 추천 백엔드 시스템</p>
+                        <p class="placeholder-text">
+                            사용자의 자연어 입력을 OpenAI를 통해 분석하여
+                            검색 조건(Criteria)을 구조화하고,<br>
+
+                            외부 쇼핑 API(네이버 스토어) 결과를
+                            정책 기반 Evaluation & Decision 로직으로 평가하여<br>
+
+                            다음 세 가지 상태를 명확히 구분합니다:<br><br>
+
+                            • RECOMMEND (추천)<br><br>
+
+                            • REQUERY (추가 조건 요청)<br><br>
+
+                            • INVALID (추천 불가)<br><br>
+
+                            AI는 “추출”과 “설명”에만 사용하고,
+                            추천 판단은 순수 도메인 정책으로 수행하는
+                            정책 기반 상품 추천 엔진입니다.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- 설계 철학 -->
+                <section class="info-section fade-in" style="animation-delay: 0.1s">
+                    <h2 class="info-section-title">🧠 설계 철학: AI는 판단하지 않는다</h2>
+                    <div class="info-philosophy">
+                        <p class="philosophy-text">
+                            이 시스템의 핵심 설계 원칙은 <strong>"AI는 판단하지 않는다"</strong>입니다. 
+                            AI는 자연어를 구조화된 조건으로 변환하는 역할만 수행하며, 
+                            실제 비즈니스 로직과 정책은 서버에서 관리합니다.
+                        </p>
+                        <div class="architecture-diagram">
+                            <div class="arch-step">
+                                <div class="arch-label">USER INPUT</div>
+                                <div class="arch-desc">자연어 요청</div>
+                            </div>
+                            <div class="arch-arrow">↓</div>
+                            <div class="arch-step highlight">
+                                <div class="arch-label">AI (NLP Only)</div>
+                                <div class="arch-desc">자연어 → 구조화된 조건</div>
+                            </div>
+                            <div class="arch-arrow">↓</div>
+                            <div class="arch-step highlight">
+                                <div class="arch-label">SERVER</div>
+                                <div class="arch-desc">조건 검증 + 정책 적용</div>
+                            </div>
+                            <div class="arch-arrow">↓</div>
+                            <div class="arch-step">
+                                <div class="arch-label">NAVER API</div>
+                                <div class="arch-desc">실제 상품 검색</div>
+                            </div>
+                            <div class="arch-arrow">↓</div>
+                            <div class="arch-step">
+                                <div class="arch-label">RESPONSE</div>
+                                <div class="arch-desc">추천 이유 생성</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- HOME vs SEARCH 분기 -->
+                <section class="info-section fade-in" style="animation-delay: 0.2s">
+                    <h2 class="info-section-title">🔀 HOME vs SEARCH 분기 구조</h2>
+                    <div class="info-flow">
+                        <p class="flow-text">
+                            사용자 입력은 <strong>의도 분류</strong>를 거쳐 두 가지 경로로 처리됩니다.
+                        </p>
+                        <div class="flow-diagram">
+                            <div class="flow-start">
+                                <div class="flow-label">USER INPUT</div>
+                                <div class="flow-desc">"5만원 이하 이어폰"</div>
+                            </div>
+                            <div class="flow-split">
+                                <div class="flow-arrow">↓</div>
+                                <div class="flow-label">의도 분류 (AI)</div>
+                                <div class="flow-branches">
+                                    <div class="flow-branch">
+                                        <div class="flow-path">
+                                            <div class="flow-step">
+                                                <div class="flow-label">HOME</div>
+                                                <div class="flow-desc">추천 시스템</div>
+                                                <div class="flow-detail">조건 기반 필터링</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flow-branch">
+                                        <div class="flow-path">
+                                            <div class="flow-step">
+                                                <div class="flow-label">SEARCH</div>
+                                                <div class="flow-desc">직접 검색</div>
+                                                <div class="flow-detail">키워드 기반</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 기술 스택 -->
+                <section class="info-section fade-in" style="animation-delay: 0.3s">
+                    <h2 class="info-section-title">🛠️ 기술 스택</h2>
+                    <div class="tech-stack-grid">
+                        <!-- Frontend -->
+                        <div class="tech-card">
+                            <div class="tech-icon">🌐</div>
+                            <div class="tech-name">HTML5</div>
+                            <div class="tech-desc">구조</div>
+                        </div>
+                        <div class="tech-card">
+                            <div class="tech-icon">🎨</div>
+                            <div class="tech-name">CSS3</div>
+                            <div class="tech-desc">스타일링</div>
+                        </div>
+                        <div class="tech-card">
+                            <div class="tech-icon">⚡</div>
+                            <div class="tech-name">JavaScript</div>
+                            <div class="tech-desc">인터랙션</div>
+                        </div>
+                        
+                        <!-- Backend -->
+                        <div class="tech-card">
+                            <div class="tech-icon">☕</div>
+                            <div class="tech-name">Java 21</div>
+                            <div class="tech-desc">언어</div>
+                        </div>
+                        <div class="tech-card">
+                            <div class="tech-icon">🍃</div>
+                            <div class="tech-name">Spring Boot</div>
+                            <div class="tech-desc">프레임워크</div>
+                        </div>
+                        <div class="tech-card">
+                            <div class="tech-icon">🔌</div>
+                            <div class="tech-name">Spring Web</div>
+                            <div class="tech-desc">REST API</div>
+                        </div>
+                        
+                        <!-- APIs -->
+                        <div class="tech-card">
+                            <div class="tech-icon">🤖</div>
+                            <div class="tech-name">OpenAI API</div>
+                            <div class="tech-desc">AI 분석</div>
+                        </div>
+                        <div class="tech-card">
+                            <div class="tech-icon">🛍️</div>
+                            <div class="tech-name">Naver Shopping</div>
+                            <div class="tech-desc">상품 검색</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- GitHub 링크 -->
+                <section class="info-section fade-in" style="animation-delay: 0.4s">
+                    <h2 class="info-section-title">🔗 GitHub</h2>
+                    <div class="info-github">
+                        <input type="text" class="github-input" placeholder="GitHub 레포지토리 URL을 입력하세요" id="githubInput">
+                        <button class="github-button" id="githubButton">저장</button>
+                        <a href="#" class="github-link" id="githubLink" style="display: none;" target="_blank">
+                            GitHub에서 보기 →
+                        </a>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 사용 가이드 페이지 ========== -->
+    <div class="view" id="guideView" style="display: none;">
+        <div class="guide-container">
+            <header class="guide-header">
+                <button class="back-button" id="backFromGuide">←</button>
+                <h1>사용 가이드</h1>
+            </header>
+
+            <div class="guide-content">
+                <!-- 질문 팁 -->
+                <section class="guide-section fade-in">
+                    <h2 class="guide-section-title">💡 이렇게 질문하면 좋아요</h2>
+                    <div class="guide-examples">
+                        <div class="guide-good">
+                            <div class="guide-badge good">✅ 좋은 예시</div>
+                            <div class="guide-example-list">
+                                <div class="guide-example">
+                                    <span class="guide-icon">💬</span>
+                                    <span>"5만원 이하 무선 이어폰 추천해줘"</span>
+                                </div>
+                                <div class="guide-example">
+                                    <span class="guide-icon">💬</span>
+                                    <span>"피부에 좋은 비타민 찾아줘"</span>
+                                </div>
+                                <div class="guide-example">
+                                    <span class="guide-icon">💬</span>
+                                    <span>"가성비 게이밍 마우스 알려줘"</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="guide-bad">
+                            <div class="guide-badge bad">❌ 아쉬운 예시</div>
+                            <div class="guide-example-list">
+                                <div class="guide-example">
+                                    <span class="guide-icon">💬</span>
+                                    <span>"뭐 좋은 거 없어?" <small>(너무 막연함)</small></span>
+                                </div>
+                                <div class="guide-example">
+                                    <span class="guide-icon">💬</span>
+                                    <span>"이어폰" <small>(조건 없음)</small></span>
+                                </div>
+                                <div class="guide-example">
+                                    <span class="guide-icon">💬</span>
+                                    <span>"추천" <small>(무엇을 추천할지 불명확)</small></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 추천이 안 나올 때 -->
+                <section class="guide-section fade-in" style="animation-delay: 0.1s">
+                    <h2 class="guide-section-title">🤔 추천이 안 나올 때는?</h2>
+                    <div class="guide-tips">
+                        <div class="guide-tip">
+                            <div class="guide-tip-number">1</div>
+                            <div class="guide-tip-content">
+                                <h3>조건을 더 구체적으로</h3>
+                                <p>"무선" → "5만원 이하 무선"</p>
+                            </div>
+                        </div>
+                        <div class="guide-tip">
+                            <div class="guide-tip-number">2</div>
+                            <div class="guide-tip-content">
+                                <h3>재질문을 활용하세요</h3>
+                                <p>봇이 "더 알려줄래?"라고 물으면 추가 조건 입력</p>
+                            </div>
+                        </div>
+                        <div class="guide-tip">
+                            <div class="guide-tip-number">3</div>
+                            <div class="guide-tip-content">
+                                <h3>카테고리를 명확히</h3>
+                                <p>"영양제" → "비타민 C 영양제"</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 대화 흐름 예시 -->
+                <section class="guide-section fade-in" style="animation-delay: 0.2s">
+                    <h2 class="guide-section-title">🔄 대화 흐름 예시</h2>
+                    <div class="guide-conversation">
+                        <div class="guide-chat-message user">
+                            <div class="guide-chat-bubble">이어폰 추천해줘!</div>
+                        </div>
+                        <div class="guide-chat-message bot">
+                            <img src="dog-normal.png" alt="봇" class="guide-chat-avatar">
+                            <div class="guide-chat-bubble">무선인가요? 가격대는 어떻게 돼요?</div>
+                        </div>
+                        <div class="guide-chat-message user">
+                            <div class="guide-chat-bubble">운동하면서 사용할 5만원 이하 무선 이어폰</div>
+                        </div>
+                        <div class="guide-chat-message bot">
+                            <img src="dog-success.png" alt="봇" class="guide-chat-avatar">
+                            <div class="guide-chat-bubble">이 상품들 어때요? 🎧</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
