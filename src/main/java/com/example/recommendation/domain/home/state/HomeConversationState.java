@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.SessionScope;
 
 import com.example.recommendation.domain.home.answer.PendingQuestionContext;
 import com.example.recommendation.domain.home.answer.SlotUpdateCommand;
@@ -28,6 +30,7 @@ import com.example.recommendation.domain.home.slot.SlotStatus;
  * HOME 단계 전체 슬롯 상태를 보관하는 대화 상태 컨테이너
  */
 @Component
+@SessionScope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class HomeConversationState {
 
     private final Map<DecisionSlot, SlotState> slots =
