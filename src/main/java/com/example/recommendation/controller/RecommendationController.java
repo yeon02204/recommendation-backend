@@ -3,6 +3,8 @@ package com.example.recommendation.controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.servlet.http.HttpSession;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,12 +30,16 @@ public class RecommendationController {
 
     @PostMapping("/home")
     public RecommendationResponseDto recommendHome(
-            @RequestBody RecommendationRequestDto request
+            @RequestBody RecommendationRequestDto request,
+            HttpSession session
     ) {
         System.out.println("🔥 Controller 진입");
         System.out.println("🔥 userInput = " + request.getUserInput());
+        System.out.println("🔥 sessionId = " + session.getId());
 
-        if (request == null || request.getUserInput() == null || request.getUserInput().isBlank()) {
+        if (request == null 
+                || request.getUserInput() == null 
+                || request.getUserInput().isBlank()) {
             return RecommendationResponseDto.invalid("입력이 비어 있습니다.");
         }
 
@@ -45,12 +51,12 @@ public class RecommendationController {
      * POST /api/recommend/reset
      */
     @PostMapping("/reset")
-    public ResponseEntity<?> reset() {
+    public ResponseEntity<?> reset(HttpSession session) {
 
-        // 🔥 진짜 상태 초기화
         contextService.reset();
 
-        System.out.println("🔥 ConversationContextService 초기화 완료");
+        System.out.println("🔥 RESET 호출됨");
+        System.out.println("🔥 sessionId = " + session.getId());
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
