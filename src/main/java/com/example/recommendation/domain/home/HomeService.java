@@ -17,7 +17,6 @@ import com.example.recommendation.domain.home.slot.DecisionSlot;
 import com.example.recommendation.domain.home.state.HomeConversationState;
 import com.example.recommendation.dto.RecommendationResponseDto;
 
-
 @Service
 public class HomeService {
 
@@ -56,7 +55,7 @@ public class HomeService {
     public RecommendationResponseDto handle(
             DecisionResult decisionResult,
             RecommendationCriteria criteria,
-            HomeConversationState conversationState   // 🔥 이제 파라미터로 받는다
+            HomeConversationState conversationState
     ) {
 
         System.out.println("HOME_STATE_HASH=" + conversationState.hashCode());
@@ -86,8 +85,10 @@ public class HomeService {
         /* ========================= */
         if (phase == ConversationPhase.DISCOVERY) {
 
+            // ANSWERED → CONFIRMED 승격
             slotConfirmationService.promoteAnsweredSlots(conversationState);
 
+            // 🔥 READY 판정
             if (readyConditionPolicy.isReady(conversationState)) {
 
                 log.info("[HomeService] ✅ READY 상태 진입");
@@ -95,6 +96,7 @@ public class HomeService {
                 RecommendationCriteria merged =
                         criteriaMergeService.merge(criteria, conversationState);
 
+                // 키워드 없으면 생성
                 if (merged.getSearchKeyword() == null) {
 
                     String generatedKeyword =
@@ -110,6 +112,9 @@ public class HomeService {
                 return RecommendationResponseDto.searchReady(merged);
             }
 
+            /* ========================= */
+            /* GUIDE 처리                */
+            /* ========================= */
             DecisionSlot guideSlot =
                     slotSelectionPolicy.selectGuideTarget(conversationState);
 
@@ -128,6 +133,9 @@ public class HomeService {
                 return RecommendationResponseDto.requery(guide);
             }
 
+            /* ========================= */
+            /* QUESTION 처리             */
+            /* ========================= */
             DecisionSlot questionSlot =
                     slotSelectionPolicy.selectNext(conversationState);
 
@@ -150,6 +158,7 @@ public class HomeService {
                 return RecommendationResponseDto.requery(question);
             }
 
+            // fallback
             return RecommendationResponseDto.requery(
                     explanationService.generateRequery(
                             HomeReason.NEED_MORE_CONDITION,
@@ -169,6 +178,9 @@ public class HomeService {
             return RecommendationResponseDto.searchReady(merged);
         }
 
+        /* ========================= */
+        /* 4️⃣ 안전망                */
+        /* ========================= */
         return RecommendationResponseDto.requery(
                 explanationService.generateRequery(
                         HomeReason.NEED_MORE_CONDITION,

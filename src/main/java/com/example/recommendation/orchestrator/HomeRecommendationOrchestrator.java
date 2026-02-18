@@ -44,8 +44,6 @@ public class HomeRecommendationOrchestrator {
     private final HomeService homeService;
     private final RecommendationResponseAssembler assembler;
     private final UserInputProcessor userInputProcessor;
-
-    // 🔥 세션 스코프 객체는 매 요청마다 조회
     private final ObjectProvider<HomeConversationState> stateProvider;
 
     public HomeRecommendationOrchestrator(
@@ -72,7 +70,7 @@ public class HomeRecommendationOrchestrator {
 
     public RecommendationResponseDto handle(RecommendationRequestDto request) {
 
-        // 🔥 현재 세션의 state 가져오기
+        // 🔥 세션 state 매 요청마다 조회
         HomeConversationState homeConversationState =
                 stateProvider.getObject();
 
@@ -96,6 +94,13 @@ public class HomeRecommendationOrchestrator {
 
         log.info("[Orchestrator] handle start");
 
+        // ✅ 1️⃣ 사용자 입력을 먼저 세션 state에 반영
+        userInputProcessor.processUserInput(
+                request.getUserInput(),
+                homeConversationState
+        );
+
+        // ✅ 2️⃣ Criteria 생성
         RecommendationCriteria incoming =
                 criteriaService.createCriteria(
                         request.getUserInput()
@@ -115,31 +120,24 @@ public class HomeRecommendationOrchestrator {
         contextService.merge(incoming);
         ConversationContext context = contextService.getContext();
 
+        // ✅ 3️⃣ readiness 평가
         SearchReadinessResult readinessResult =
                 searchReadinessEvaluator.evaluate(context, incoming);
 
         if (readinessResult.readiness()
                 == SearchReadiness.NEED_MORE_CONTEXT) {
 
-            // 🔥 세션 state에 사용자 입력 반영
-            userInputProcessor.processUserInput(
-                    request.getUserInput(),
+            return homeService.handle(
+                    DecisionResult.discovery(
+                            Decision.requery(),
+                            readinessResult.reason()
+                    ),
+                    incoming,
                     homeConversationState
             );
-
-            RecommendationResponseDto homeResponse =
-                    homeService.handle(
-                            DecisionResult.discovery(
-                                    Decision.requery(),
-                                    readinessResult.reason()
-                            ),
-                            incoming,
-                            homeConversationState   // 🔥 반드시 전달
-                    );
-
-            return homeResponse;
         }
 
+        // ✅ 4️⃣ SEARCH 단계
         RecommendationCriteria criteriaForSearch =
                 context.toCriteria();
 
